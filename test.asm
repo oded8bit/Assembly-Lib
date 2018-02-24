@@ -30,6 +30,7 @@ start:
 	mov ax, @data
 	mov ds,ax
 
+    call FreeProgramMem
    
 exit:
     return 0

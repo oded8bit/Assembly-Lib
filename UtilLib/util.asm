@@ -12,10 +12,15 @@
 LOCALS @@
 
 DATASEG
-  TRUE        equ    1
-  FALSE       equ    0
+  _dss         dw    0        ; Saved DS segment
 
 CODESEG
+;------------------------------------------------------------------------
+; Initialization - call at the beginning of your program
+;------------------------------------------------------------------------
+MACRO ut_init_lib
+  mov [_dss], ds
+ENDM
 ;----------------------------------------------------------
 ; called at the beginnig of each PROC to store
 ; and set BP value

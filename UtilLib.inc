@@ -11,6 +11,11 @@
 ; Include this file to get access to the utilities library
 ;===================================================================================================
 
+; Common definitions
+TRUE        equ     1
+FALSE       equ     0
+
+; Includes
 include "UtilLib\util.asm"
 include "UtilLib\math.asm"
 include "UtilLib\file.asm"
