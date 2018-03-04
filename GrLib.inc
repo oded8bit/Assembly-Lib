@@ -12,7 +12,7 @@
 ;===================================================================================================
 
 ; Common definitions
-BMP_STRUCT_SIZE         equ         442h
+BMP_STRUCT_SIZE         equ         444h
 
 ; Includes
 include "GrLib\dblbuf.asm"
@@ -22,6 +22,6 @@ include "GrLib\line.asm"
 include "GrLib\rect.asm"
 include "GrLib\poly.asm"
 include "GrLib\circle.asm"
-
-; images
-; animation
+include "GrLib\bmp.asm"
+include "GrLib\image.asm"
+include "GrLib\anim.asm"

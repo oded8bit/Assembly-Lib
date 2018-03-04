@@ -11,6 +11,11 @@
 ;===================================================================================================
 LOCALS @@
 
+DATASEG
+    MAX_MALLOC_SEGS         equ         50
+    _programMemFreed        db          FALSE
+    _allocatedSegments      dw          MAX_MALLOC_SEGS dup(0)
+    _allocatedSegmentsIndex dw          0
 CODESEG
 
 ;+-+-+-+-+-+-+-+-+ HEAP MNGM. +-+-+-+-+-+-+-+-++-+-+-+-+-+
@@ -29,6 +34,7 @@ CODESEG
 ; call HeapReset 
 ;----------------------------------------------------------
 PROC FreeProgramMem
+    store_sp_bp
     mov	dx,ss		; Stack segment
     mov	bx,256 / 16 + 1 ; stack size in paragraphs
     add	bx,dx		; BX = end
@@ -36,6 +42,8 @@ PROC FreeProgramMem
     sub	bx,ax		; BX = new size in paragraphs
     mov	ah,4Ah
     int	21h
+    mov [_programMemFreed], TRUE
+    restore_sp_bp
     ret
 ENDP FreeProgramMem
 
@@ -43,7 +51,7 @@ ENDP FreeProgramMem
 ; Allocate memory on the heap
 ;
 ; push size             (in paragraphs)    (2000h = 128 KB)
-; call HeapAlloc
+; call malloc
 ;
 ; Parag = bytes / 16
 ;
@@ -57,34 +65,109 @@ ENDP FreeProgramMem
 ; Allocated memory is at AX:0000
 ;----------------------------------------------------------
 PROC malloc
+    store_sp_bp
+    push cx di
+    cmp [_programMemFreed], TRUE
+    jne @@error
+    
     clc
     mov bx, [word bp+4]
     mov ah, 48h
     int 21h  
     jc  @@error
+    mov cx, [_allocatedSegmentsIndex]               ; cx = index    
+    shl cx, 1                                       ; index * 2 (counts words)
+    mov di, offset _allocatedSegments
+    add di, cx
+    mov [di], ax                                    ; save allocated segment
+    inc [_allocatedSegmentsIndex]                   ; increment index
     jmp @@ok
 @@error:  
     mov ax,0
     mov bx,0
 @@ok:  
+    pop di cx
+    restore_sp_bp
+    ret 2
 ENDP malloc
 ;----------------------------------------------------------
 ; Free memory on the heap
 ;
 ; push addr             (address of block)
-; call HeapAlloc
+; call mfree
 ;
 ; Return value: ax register is a pointer to the memory
 ; or 0 on error
 ;----------------------------------------------------------
 PROC mfree
+    store_sp_bp
     push es
-    push [word bp+4]
+
+    ; now the stack is
+    ; bp+0 => old base pointer
+    ; bp+2 => return address
+    ; bp+4 => addr
+    ; saved registers    
+
+    ;{
+     addr_      equ         [word bp+4]   
+    ;}
+
+    push addr_
     pop es
     mov ah, 49h
     int 21h
+    
     pop es
+    restore_sp_bp
+    ret 2
 ENDP mfree
+;----------------------------------------------------------
+; Free all allocated segments on the heap
+;
+; call mfreeAll
+;
+; Return value: ax register is a pointer to the memory
+; or 0 on error
+;----------------------------------------------------------
+PROC mfreeAll
+    store_sp_bp
+    sub sp,2
+    push es cx bx
+
+    ; now the stack is
+    ; bp-2=> index
+    ; bp+0 => old base pointer
+    ; bp+2 => return address
+    ; saved registers    
+
+    ;{
+    index_      equ     [word bp-2]
+    ;}
+    
+    mov index_, 0
+    mov cx, [_allocatedSegmentsIndex]
+    cmp cx, 0
+    je @@ok                     ; nothing to release
+    
+@@fr:    
+    mov bx, index_
+    shr bx,1                    ; index * 2 (counts in words)
+    add bx, offset _allocatedSegments
+
+    push [word bx]
+    pop es                      ; es = segment
+
+    mov ah, 49h
+    int 21h                     ; free
+
+    inc index_                  ; index++
+    loop @@fr
+@@ok:    
+    pop bx cx es
+    restore_sp_bp
+    ret
+ENDP mfreeAll
 ;----------------------------------------------------------
 ; Copies memory from one address to another
 ;

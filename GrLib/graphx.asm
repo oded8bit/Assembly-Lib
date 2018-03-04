@@ -308,7 +308,7 @@ MACRO clear_screen
   ;gr_set_video_mode_vga
     xor   di,di
     xor   ax,ax
-    mov   cx,VGA_SCREEN_WIDTH*VGA_SCREEN_HEIGHT/4
+    mov   cx,VGA_SCREEN_WIDTH*VGA_SCREEN_HEIGHT
     rep   stosw
 ENDM
 ;----------------------------------------------------------
