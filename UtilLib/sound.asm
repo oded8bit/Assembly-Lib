@@ -77,7 +77,7 @@ ENDP StopBeep
 ;
 ; grm_Beep (freq)
 ;----------------------------------------------------------------------
-MACRO grm_Beep freq
+MACRO utm_Beep freq
     push freq
     call Beep
 ENDM    
@@ -86,6 +86,6 @@ ENDM
 ;
 ; grm_StopBeep()
 ;----------------------------------------------------------------------
-MACRO grm_StopBeep
+MACRO utm_StopBeep
     call StopBeep
 ENDM

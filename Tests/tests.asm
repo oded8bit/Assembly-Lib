@@ -49,9 +49,9 @@ PROC TestSound
     mov cx,3
     mov bx, 0122h
 @@ss:
-    grm_Beep bx
-    grm_Sleep 1
-    grm_StopBeep
+    utm_Beep bx
+    utm_Sleep 1
+    utm_StopBeep
     add bx, 80h  
     
     loop @@ss

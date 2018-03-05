@@ -280,9 +280,9 @@ ENDP fchangeAttr
 ;----------------------------------------------------------------------
 ; Open a file
 ;
-; grm_fopen (pathOffset, pathSegment)
+; utm_fopen (pathOffset, pathSegment)
 ;----------------------------------------------------------------------
-MACRO grm_fopen pathOffset, pathSegment
+MACRO utm_fopen pathOffset, pathSegment
     push pathOffset
     push pathSegment
     call fopen
@@ -290,9 +290,9 @@ ENDM
 ;----------------------------------------------------------------------
 ; Creates a new file
 ;
-; grm_fnew (pathOffset, pathSegment)
+; utm_fnew (pathOffset, pathSegment)
 ;----------------------------------------------------------------------
-MACRO grm_fnew pathOffset, pathSegment
+MACRO utm_fnew pathOffset, pathSegment
     push pathOffset
     push pathSegment
     call fnew
@@ -300,17 +300,17 @@ ENDM
 ;----------------------------------------------------------------------
 ; Close a file
 ;
-; grm_fclose
+; utm_fclose
 ;----------------------------------------------------------------------
-MACRO grm_fclose
+MACRO utm_fclose
     call fclose
 ENDM
 ;----------------------------------------------------------------------
 ; Write to a file
 ;
-; grm_fwrite (length, bufOffset, bufSegment)
+; utm_fwrite (length, bufOffset, bufSegment)
 ;----------------------------------------------------------------------
-MACRO grm_fqrite length, bufOffset, bufSegment
+MACRO utm_fqrite length, bufOffset, bufSegment
     push length
     push bufOffset
     push bufSegment
@@ -319,9 +319,9 @@ ENDM
 ;----------------------------------------------------------------------
 ; Deletes a file
 ;
-; grm_fdelete (pathOffset, pathSegment)
+; utm_fdelete (pathOffset, pathSegment)
 ;----------------------------------------------------------------------
-MACRO grm_fdelete pathOffset, pathSegment
+MACRO utm_fdelete pathOffset, pathSegment
     push pathOffset
     push pathSegment
     call fdelete
@@ -329,9 +329,9 @@ ENDM
 ;----------------------------------------------------------------------
 ; Change attribute of a file
 ;
-; grm_fdelete (pathOffset, pathSegment)
+; utm_fdelete (pathOffset, pathSegment)
 ;----------------------------------------------------------------------
-MACRO grm_fchangeAttr attrib, pathOffset, pathSegment
+MACRO utm_fchangeAttr attrib, pathOffset, pathSegment
     push attrib
     push pathOffset
     push pathSegment

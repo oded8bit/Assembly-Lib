@@ -145,7 +145,7 @@ ENDP DelayMS
 ;
 ; grm_Sleep (seconds)
 ;------------------------------------------------------------------------
-MACRO grm_Sleep seconds
+MACRO utm_Sleep seconds
     push seconds
     call Sleep
 ENDM
@@ -157,7 +157,7 @@ ENDM
 ;
 ; grm_Delay (clicks)
 ;------------------------------------------------------------------------
-MACRO grm_Delay clicks
+MACRO utm_Delay clicks
     push clicks
     call Delay
 ENDM
@@ -179,7 +179,7 @@ ENDM
 ; 
 ; grm_DelayMS (high, low)
 ;------------------------------------------------------------------------
-MACRO grm_DelayMS highOrder, lowOrder
+MACRO utm_DelayMS highOrder, lowOrder
     push highOrder
     push lowOrder
     call Delay

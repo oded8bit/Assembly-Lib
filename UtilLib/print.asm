@@ -327,7 +327,7 @@ endp PrintDecimal
 ;
 ; grm_SetCursorPosition (x,y)
 ;----------------------------------------------------------------------
-MACRO grm_SetCursorPosition x, y
+MACRO utm_SetCursorPosition x, y
     push x
     push y
     call SetCursorPosition
@@ -337,7 +337,7 @@ ENDM
 ;
 ; grm_Strlen (strOffset)
 ;----------------------------------------------------------------------
-MACRO grm_Strlen strOffset
+MACRO utm_Strlen strOffset
     push strOffset
     call Strlen
 ENDM
@@ -346,7 +346,7 @@ ENDM
 ;
 ; grm_PrintStrVGA (XX, XX)
 ;----------------------------------------------------------------------
-MACRO grm_PrintStrVGA color, strOffset, x, y
+MACRO utm_PrintStrVGA color, strOffset, x, y
     push color
     push strOffset
     push x
