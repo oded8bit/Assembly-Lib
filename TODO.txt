@@ -1,0 +1,4 @@
+1. Bitmap need to allocate dynamic memory
+2. Sprites needs to be tested
+3. Animation needs to be tested
+
