@@ -116,7 +116,7 @@ Make sure you pass the arguments in the right order. All procedures preserve reg
 Macros (not including wrapper macros), on the other hand, may alter register values. Check out their documentation for details.
 
 # Testing the library and code samples
-The [Tests](Tests/test.asm) folder includes a testing file that demonstrates the use of various parts of the library. the test program itself 
+The [Tests](Tests/tests.asm) folder includes a testing file that demonstrates the use of various parts of the library. the test program itself 
 can be found at the root and is called [test.asm](test.asm)
 
 # ---------------------------------------------------------------
