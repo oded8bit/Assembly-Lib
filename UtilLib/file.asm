@@ -200,7 +200,7 @@ PROC fwrite
 	ret 6
 ENDP fwrite
 ;------------------------------------------------------------------
-; Close a file
+; Delete a file
 ;
 ; push segment of file name
 ; push address of file name
@@ -235,7 +235,7 @@ PROC fdelete
 	ret 4
 ENDP fdelete
 ;------------------------------------------------------------------
-; Close a file
+; Change attribute of a file
 ;
 ; push attribute
 ; push segment of file name
@@ -272,3 +272,68 @@ PROC fchangeAttr
     restore_sp_bp
 	ret 6
 ENDP fchangeAttr
+
+;////////////////////////////////////////////////////////////////////////////
+; FUNCTION LIKE MACROS
+;////////////////////////////////////////////////////////////////////////////
+
+;----------------------------------------------------------------------
+; Open a file
+;
+; grm_fopen (pathOffset, pathSegment)
+;----------------------------------------------------------------------
+MACRO grm_fopen pathOffset, pathSegment
+    push pathOffset
+    push pathSegment
+    call fopen
+ENDM
+;----------------------------------------------------------------------
+; Creates a new file
+;
+; grm_fnew (pathOffset, pathSegment)
+;----------------------------------------------------------------------
+MACRO grm_fnew pathOffset, pathSegment
+    push pathOffset
+    push pathSegment
+    call fnew
+ENDM
+;----------------------------------------------------------------------
+; Close a file
+;
+; grm_fclose
+;----------------------------------------------------------------------
+MACRO grm_fclose
+    call fclose
+ENDM
+;----------------------------------------------------------------------
+; Write to a file
+;
+; grm_fwrite (length, bufOffset, bufSegment)
+;----------------------------------------------------------------------
+MACRO grm_fqrite length, bufOffset, bufSegment
+    push length
+    push bufOffset
+    push bufSegment
+    call fwrite
+ENDM
+;----------------------------------------------------------------------
+; Deletes a file
+;
+; grm_fdelete (pathOffset, pathSegment)
+;----------------------------------------------------------------------
+MACRO grm_fdelete pathOffset, pathSegment
+    push pathOffset
+    push pathSegment
+    call fdelete
+ENDM
+;----------------------------------------------------------------------
+; Change attribute of a file
+;
+; grm_fdelete (pathOffset, pathSegment)
+;----------------------------------------------------------------------
+MACRO grm_fchangeAttr attrib, pathOffset, pathSegment
+    push attrib
+    push pathOffset
+    push pathSegment
+    call fchangeAttr
+ENDM

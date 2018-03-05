@@ -135,3 +135,53 @@ PROC DelayMS
     restore_sp_bp
     ret 4
 ENDP DelayMS
+
+;////////////////////////////////////////////////////////////////////////////
+; FUNCTION LIKE MACROS
+;////////////////////////////////////////////////////////////////////////////
+
+;------------------------------------------------------------------------
+; Halt program for a given number of seconds
+;
+; grm_Sleep (seconds)
+;------------------------------------------------------------------------
+MACRO grm_Sleep seconds
+    push seconds
+    call Sleep
+ENDM
+;------------------------------------------------------------------------
+; Creates a short delay 
+;
+; Uses system ticks (about 18/sec) so a delay of '1' is about 1/18 
+; of a sec
+;
+; grm_Delay (clicks)
+;------------------------------------------------------------------------
+MACRO grm_Delay clicks
+    push clicks
+    call Delay
+ENDM
+;------------------------------------------------------------------------
+; Delay execution for given number of microseconds
+;
+; Notes:
+;   1. 1,000,000 microseconds = 1 second. For 2 seconds, 
+;      set CX=001eH and DX=8480H.   (1E 8480 = 2,000,000)
+;   2. 1 msec = 1000*1 = CX=0  DX=03eBh
+;   3. CX must be at least 1000 (03e8H)
+;
+; Input:
+;     high order - of number of microseconds
+;     low order - of number of microseconds
+; 
+; Output:
+;     None
+; 
+; grm_DelayMS (high, low)
+;------------------------------------------------------------------------
+MACRO grm_DelayMS highOrder, lowOrder
+    push highOrder
+    push lowOrder
+    call Delay
+ENDM
+

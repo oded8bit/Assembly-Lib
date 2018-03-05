@@ -230,7 +230,7 @@ ENDP Strlen
 ;
 ; push x
 ; push y
-; call Strlen
+; call SetCursorPosition
 ;----------------------------------------------------------
 PROC SetCursorPosition
     store_sp_bp
@@ -317,3 +317,39 @@ pop_next:
 	   
 	   ret
 endp PrintDecimal
+
+;////////////////////////////////////////////////////////////////////////////
+; FUNCTION LIKE MACROS
+;////////////////////////////////////////////////////////////////////////////
+ 
+;----------------------------------------------------------------------
+; Set cursor position
+;
+; grm_SetCursorPosition (x,y)
+;----------------------------------------------------------------------
+MACRO grm_SetCursorPosition x, y
+    push x
+    push y
+    call SetCursorPosition
+ENDM
+;----------------------------------------------------------------------
+; Calculates length of string ending with NULL
+;
+; grm_Strlen (strOffset)
+;----------------------------------------------------------------------
+MACRO grm_Strlen strOffset
+    push strOffset
+    call Strlen
+ENDM
+;----------------------------------------------------------------------
+; Prints a string to the VGA screen
+;
+; grm_PrintStrVGA (XX, XX)
+;----------------------------------------------------------------------
+MACRO grm_PrintStrVGA color, strOffset, x, y
+    push color
+    push strOffset
+    push x
+    push y
+    call PrintStrVGA
+ENDM
