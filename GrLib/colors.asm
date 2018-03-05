@@ -131,3 +131,20 @@ MACRO GetPaletteBios
     int 10h
     pop ax
 ENDM
+
+;////////////////////////////////////////////////////////////////////////////
+; FUNCTION LIKE MACROS
+;////////////////////////////////////////////////////////////////////////////
+
+;----------------------------------------------------------------------
+; 
+;
+; grm_SetPaletteDirect (index, R, G, B)
+;----------------------------------------------------------------------
+MACRO grm_SetPaletteDirect index, R, G, B
+    push index
+    push R
+    push G
+    push B
+    call SetPaletteDirect
+ENDM

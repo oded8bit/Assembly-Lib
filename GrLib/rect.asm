@@ -131,3 +131,33 @@ PROC GR_FillRect
   restore_sp_bp
   ret 8
 ENDP GR_FillRect
+
+;////////////////////////////////////////////////////////////////////////////
+; FUNCTION LIKE MACROS
+;////////////////////////////////////////////////////////////////////////////
+
+;----------------------------------------------------------------------
+; Draw Rect
+;
+; grm_DrawRect (x, y, width, height)
+;----------------------------------------------------------------------
+MACRO grm_DrawRect x, y, width, height
+    push x
+    push y
+    push width
+    push height
+    call GR_DrawRect
+ENDM
+
+;----------------------------------------------------------------------
+; Fill Rect
+;
+; grm_FillRect (x, y, width, height)
+;----------------------------------------------------------------------
+MACRO grm_FillRect x, y, width, height
+    push x
+    push y
+    push width
+    push height
+    call GR_FillRect
+ENDM

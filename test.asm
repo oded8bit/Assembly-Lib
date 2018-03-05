@@ -40,7 +40,6 @@ start:
     gr_set_video_mode_vga
     gr_set_color GR_COLOR_GREEN
 
-
     ;----- NO PASS
     ;call TestBmp
     call TestShapes

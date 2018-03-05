@@ -73,3 +73,18 @@ PROC GR_DrawPolygon
   restore_sp_bp
   ret 4
 ENDP GR_DrawPolygon
+
+;////////////////////////////////////////////////////////////////////////////
+; FUNCTION LIKE MACROS
+;////////////////////////////////////////////////////////////////////////////
+
+;----------------------------------------------------------------------
+; Draw a polygon
+;
+; grm_DrawPolygon (numPoints, polygonOffset)
+;----------------------------------------------------------------------
+MACRO grm_DrawPolygon numPoints, polygonOffset
+    push numPoints
+    push polygonOffset
+    call GR_DrawPolygon
+ENDM

@@ -233,6 +233,7 @@ MACRO gr_set_pixel x, y, color
   local _NotDbl, _out
   push ax
   push bx
+  push dx
   push di
   push es
 
@@ -251,6 +252,7 @@ _NotDbl:
 _out:  
   pop es
   pop di
+  pop dx
   pop bx
   pop ax
 ENDM

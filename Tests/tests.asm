@@ -94,49 +94,31 @@ ENDP TestPrint
 
 ;///////////////////////////// SHAPES
 PROC TestShapes
+  
+    mov ax, offset _polygon
+    grm_DrawPolygon 5, ax
 
-    push 5
-    push offset _polygon
-    call GR_DrawPolygon
-    
     gr_set_color GR_COLOR_YELLOW
-    push 50 ; x
-    push 50 ; y
-    push 100 ; w
-    push 100  ; h
-    call GR_DrawRect
+    grm_DrawRect 50,50,100,100
 
     gr_set_color GR_COLOR_RED
-	push 1
-	push 1
-	push 100
-	push 180
-	call GR_DrawLine
+    grm_DrawLine 1,1,100,100
 
     gr_set_color GR_COLOR_BLUE
-    push 200 ; x
-    push 20 ; y
-    push 80 ; w
-    push 50  ; h
-    call GR_FillRect
+    grm_FillRect 200,20,80,50
 
-    call WaitForKeypress    
-
+    call WaitForKeypress  
+    
     ;call GR_ClearScreen
     clear_screen
     call WaitForKeypress    
 
     gr_set_color GR_COLOR_BLUE
-    push  200
-    push  60
-    push 50
-    call GR_DrawCircle
+    grm_DrawCircle 200,60,50
 
     gr_set_color GR_COLOR_CYAN
-    push  100
-    push  90
-    push 50
-    call GR_FillCircle
+    grm_FillCircle 100,90,50
 
+@@exit:
     ret    
 ENDP TestShapes

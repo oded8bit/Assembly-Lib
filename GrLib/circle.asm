@@ -174,3 +174,30 @@ loop @@advance_v
     ret 06h
 ENDP GR_FillCircle
 
+;////////////////////////////////////////////////////////////////////////////
+; FUNCTION LIKE MACROS
+;////////////////////////////////////////////////////////////////////////////
+
+;----------------------------------------------------------------------
+; Fills a circle
+;
+; grm_FillCircle (Xcenter, Ycenter, Radius)
+;----------------------------------------------------------------------
+MACRO grm_FillCircle Xcenter, Ycenter, Radius
+    push Xcenter
+    push Ycenter
+    push Radius
+    call GR_FillCircle
+ENDM
+
+;----------------------------------------------------------------------
+; Draw a circle
+;
+; grm_DrawCircle (Xcenter, Ycenter, Radius)
+;----------------------------------------------------------------------
+MACRO grm_DrawCircle Xcenter, Ycenter, Radius
+    push Xcenter
+    push Ycenter
+    push Radius
+    call GR_DrawCircle
+ENDM
