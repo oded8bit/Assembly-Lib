@@ -102,7 +102,6 @@ PROC TestShapes
     gr_set_color GR_COLOR_BLUE
     grm_FillRect 200,20,80,50
 
-    ; ss
     call CopyDblBufToVideo
 
     call WaitForKeypress  
