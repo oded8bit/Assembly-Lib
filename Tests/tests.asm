@@ -92,6 +92,7 @@ PROC TestShapes
     mov ax, offset _polygon
     grm_DrawPolygon 5, ax
 
+
     gr_set_color GR_COLOR_YELLOW
     grm_DrawRect 50,50,100,100
 
@@ -101,6 +102,7 @@ PROC TestShapes
     gr_set_color GR_COLOR_BLUE
     grm_FillRect 200,20,80,50
 
+    ; ss
     call CopyDblBufToVideo
 
     call WaitForKeypress  
