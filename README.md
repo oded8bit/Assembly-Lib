@@ -41,7 +41,7 @@ To include the graphics library use the following at the top of your CODESEG. No
 ```
 
 # Using the library
-To use the linraries, include the files in your code as follows:
+To use the libraries, include the files in your code as follows:
 ```sh
 CODESEG
     include "UtilLib.inc"
@@ -54,7 +54,7 @@ Here is a sample program that draws a line and waits for a key press, using doub
 .486
 IDEAL
 MODEL small
-	stack 256
+STACK 256
 DATASEG	
 
 CODESEG
@@ -78,7 +78,7 @@ start:
     ; Set initial pen color
     gr_set_color GR_COLOR_GREEN
 
-    ; your code here
+    ; your code here - we will draw a line...
     grm_DrawLine  10, 10, 200, 200
 
 exit:
@@ -91,8 +91,8 @@ END start
 
 Build the program using
 ```sh
-tasm /zi prog.asm
-tlink /v prog
+tasm /zi test.asm
+tlink /v test
 ```
 
 # PROCs and MACROs
@@ -114,6 +114,10 @@ or using a wrapper MACRO
 
 Make sure you pass the arguments in the right order. All procedures preserve register values, unless stated otherwise.
 Macros (not including wrapper macros), on the other hand, may alter register values. Check out their documentation for details.
+
+# Testing the library and code samples
+The [Tests](Tests/test.asm) folder includes a testing file that demonstrates the use of various parts of the library. the test program itself 
+can be found at the root and is called [test.asm](test.asm)
 
 # ---------------------------------------------------------------
 # Graphics Library
