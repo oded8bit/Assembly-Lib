@@ -1,7 +1,7 @@
 # Assembly Library
 For more projects, [click here](http://odedc.net)
 
-A 16-bits DOS Assembly library that provides many useful functions for developing programs. It has both VGA grapics functions as well as general purpose utilities. The main purpose of this library was to be able to implement simple DOS games (in Assembly) using VGA (320x200, 256 colors) display.
+A 16-bits x86 DOS Assembly library that provides many useful functions for developing programs. It has both VGA grapics functions as well as general purpose utilities. The main purpose of this library was to be able to implement simple DOS games (in Assembly) using VGA (320x200, 256 colors) display.
 
 **Note** The library was developed and tested using [TASM 4.1](https://sourceforge.net/projects/guitasm8086/files/) and [DosBox](https://www.dosbox.com/)
 
@@ -375,3 +375,300 @@ AX = 0 if no scan code is available
 AH = scan code
 AL = ASCII character or zero if special function _Key
 
+### Consume Key
+Taking the pressed key out of the keyboard buffer
+```sh
+    call ConsumeKey
+```
+
+### Install & Restore a Keyboard ISR
+You can replace the default keyboard interrupt with your own by calling this procedure 
+```sh
+    push isr_address 
+    call InstallKeyboardInterrupt
+```
+For example:
+```sh
+    lea dx,[my_interr]
+    push dx
+    call InstallKeyboardInterrupt
+```
+You **must** restore the interrupt at the end of the program by calling
+```sh
+call RestoreKeyboardInterrupt
+```
+
+# Mouse 
+Most mouse functions are accessible via interrupts and the library focuses on some less trivial parts of handling the mouse.
+
+### Show and Hide the mouse
+Use these macros to show / hide the mouse
+```sh
+    ShowMouse
+
+    HideMouse
+```
+### Get Mouse Status
+Mouse position and button status can be retrieved by
+```sh
+    GetMouseStatus
+```
+On return:
+	CX = horizontal (X) position  (0..639)
+	DX = vertical (Y) position  (0..199)
+	BX = button status:
+
+		|F-8|7|6|5|4|3|2|1|0|  Button Status
+		  |  | | | | | | | `---- left button (1 = pressed)
+		  |  | | | | | | `----- right button (1 = pressed)
+		  `------------------- unused
+
+### Translate Mouse Coordinates
+After getting mouse coordinates from **GetMouseStatus**, you can translate them to VGA coordinates by calling
+```sh
+    TranslateMouseCoords
+```
+
+### Installing and Restoring Mouse ISR
+You can replace the default mouse interrupt with your own by calling this procedure 
+```sh
+    push ISR address
+    push ISR segment
+    push mask
+    call InstallMouseInterrupt
+```
+You **must** restore the interrupt at the end of the program by calling
+```sh
+call UninstallMouseInterrupt
+```
+
+# File System
+The library provide a set of functions to access and manipulate files. The library was designed to handle a single file at any time using the global variables
+```sh
+    _fHandle - stores the handle of the openned file
+    _fErr - stores the error value
+```
+
+### Open a File
+```sh
+    push address_of_file_name
+    push segment_of_file_name
+    call fopen
+```
+or using MACROS:
+```sh
+    utm_fopen address_of_file_name, segment_of_file_name
+```
+
+### Create a New File
+```sh
+    push address_of_file_name
+    push segment_of_file_name
+    call fnew
+```
+or using MACROS:
+```sh
+    utm_fnew address_of_file_name, segment_of_file_name
+```
+### Close a File
+```sh
+    call fclose
+```
+or using MACROS:
+```sh
+    utm_fclose
+```
+### Read from a File
+```sh
+    push length
+    push address_of_buffer
+    push segment_of_buffer
+    call fread
+```
+or using MACROS:
+```sh
+    utm_fread address_of_buffer, segment_of_buffer
+```
+### Write to a File
+```sh
+    push length
+    push address_of_buffer
+    push segment_of_buffer
+    call fwrite
+```
+or using MACROS:
+```sh
+    utm_fwrite address_of_buffer, segment_of_buffer
+```
+### Delete a File
+```sh
+    push address_of_file_name
+    push segment_of_file_name
+    call fdelete
+```
+or using MACROS:
+```sh
+    utm_fdelete address_of_file_name, segment_of_file_name
+```
+### Change File Attributes
+```sh
+    push attribute
+    push address_of_file_name
+    push segment_of_file_name
+    call fchangeAttr
+```
+or using MACROS:
+```sh
+    utm_fchangeAttr attribute, address_of_file_name, segment_of_file_name
+```
+# Math 
+The library provide some basic math related functions and macros
+
+### Random Numbers
+Before generating a random number, you need to initialize the number generator by calling
+```sh
+    call RandomSeed
+```
+and then you can use 
+```sh
+    call RandomWord
+or
+    call RandomByte    
+```
+to get a random number in AX or AL
+
+### Abs(x)
+You can get the absoilute value of a number 
+```sh
+    gr_absolute number
+```
+
+# Memory Management
+The library allows managing (allocating, releasing) RAM memory. If you need to allocate dynamic memory, you **must** free unused memory at the
+beginning of your program by calling:
+```sh
+    call FreeProgramMem
+```
+If you forget to call it, all memory allocations will fail on "out of memory".
+
+### Allocating a block
+Allocating a memory block is done by calling:
+```sh
+    push size
+    call malloc
+```
+Note that the size is measured in Paragraphs and therefore need to be divided by 16 (bytes)
+
+Return value: 
+AX = segment address of allocated memory block (MCB + 1para)
+     0 on error 
+BX = size in paras of the largest block of memory available
+     0 on error
+CF = 0 if successful
+   = 1 if error
+Allocated memory is at AX:0000
+
+### Release an allocated memory block
+Pass the segment address of the allocated memory block to release it
+```sh
+    push segment
+    call mfree
+```
+
+### Releasing all allocated blocks
+The library maintains an internal list of up to 50 allocated blocks that can be freed by calling
+```sh
+    call mfreeAll
+```
+
+### Memory Copy
+Copies memory from one address to another
+```sh
+    push from_address
+    push from_seg
+    push to_address
+    push to_seg
+    push length_in_bytes
+    call MemCpy
+```
+
+
+# Sound
+You can make a beep with the following procedure. Note that the sound will continue until you stop it
+```sh
+    push frequency
+    call Beep
+
+    utm_Sleep  2        ; wait 2 seconds
+
+    call StopBeep
+```
+Or with macros:
+```sh
+    utm_Beep freq
+    utm_Sleep 2
+    utm_StopBeep
+```
+
+# Print
+This part of the library supports writting text to the screen
+
+### Printing to the screeb
+```sh
+    call PrintDecimal   - prints a value as a decimal number
+
+    call PrintChar      - prints DL as a char
+    PrintCharNewLine    - macro to print a char with new line
+
+    call PrintByte      - prints DL (number between 0 and 15)
+    PrintByteNewLine    - macro to print a byte with a new line
+
+    call PrintStr       - prints a string. DS:DX pointer to string ending in "$"
+    PrintStrNewLine     - macro to print a string with a new line
+
+    call PrintNewLine   - prints a new line
+    call PrintSpace     - prints a space char
+```
+
+### Printing in VGA
+```sh
+    call PrintCharVGA   - prints a character on VGA display (DL: char, BL: color)
+    call PrintStrVGA    - prints a string to the VGA screen    
+```
+
+### String Length
+You can cound the chars in a string and get the result in AX
+```sh
+push str_offset
+call Strlen
+```
+
+## Setting cursor position
+```sh
+    push x
+    push y
+    call SetCursorPosition
+```
+
+
+
+
+
+
+
+
+# License
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty
+of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
+
+-------------------------------------------------------------------------
+# Credits
+1. Some ideas were taken from https://github.com/itay-grudev/assembly-dos-gx
+2. README file created using [Dillinger](https://dillinger.io/)

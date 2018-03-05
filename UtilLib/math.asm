@@ -51,7 +51,7 @@ ENDP RandomWord
 ;----------------------------------------------------------
 PROC RandomByte
     call RandomWord
-    and  ax,000fh
+    and  ax,00ffh
     ret
 ENDP RandomByte
 
