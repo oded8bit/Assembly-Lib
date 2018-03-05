@@ -49,15 +49,10 @@ PROC TestSound
     mov cx,3
     mov bx, 0122h
 @@ss:
-    push bx
-    call Beep
-
-    push 1
-    call Sleep
-
-    call StopBeep
-    add bx, 80h
-    
+    grm_Beep bx
+    grm_Sleep 1
+    grm_StopBeep
+    add bx, 80h  
     
     loop @@ss
     ret
@@ -94,7 +89,6 @@ ENDP TestPrint
 
 ;///////////////////////////// SHAPES
 PROC TestShapes
-  
     mov ax, offset _polygon
     grm_DrawPolygon 5, ax
 
@@ -107,9 +101,10 @@ PROC TestShapes
     gr_set_color GR_COLOR_BLUE
     grm_FillRect 200,20,80,50
 
+    call CopyDblBufToVideo
+
     call WaitForKeypress  
     
-    ;call GR_ClearScreen
     clear_screen
     call WaitForKeypress    
 
@@ -119,6 +114,7 @@ PROC TestShapes
     gr_set_color GR_COLOR_CYAN
     grm_FillCircle 100,90,50
 
+    call CopyDblBufToVideo
 @@exit:
     ret    
 ENDP TestShapes

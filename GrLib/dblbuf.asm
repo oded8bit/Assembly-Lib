@@ -88,6 +88,8 @@ PROC ReleaseDblBuffer
     store_sp_bp
     push ax es
 
+    IsDblBuffering @@end
+
     SetDoubleBuffering FALSE
     GetDblBufferSeg ax
     push ax
@@ -105,11 +107,13 @@ PROC ClearDblBuffer
     store_sp_bp
     push ax es di cx
 
+    IsDblBuffering @@end
+
     GetDblBufferSeg es
     xor di,di
 
     xor   ax,ax
-    mov ax,0
+    mov   ax,0
     mov   cx,VGA_SCREEN_WIDTH * VGA_SCREEN_HEIGHT
     rep   stosb                 ; Store AL at address ES:DI
 @@end:
@@ -121,10 +125,12 @@ ENDP ClearDblBuffer
 ;------------------------------------------------------------------------
 ; PROC Description: Copy double buffer to video memory (VGA)
 ;------------------------------------------------------------------------
-PROC CopyDblBufToVideo
+PROC CopyDblBufToVideo    
     store_sp_bp
     push si di cx es ds
  
+    IsDblBuffering @@end
+
     mov cx, [GR_START_ADDR]
     mov es, cx
     GetDblBufferSeg ds

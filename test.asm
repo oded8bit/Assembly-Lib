@@ -35,6 +35,7 @@ start:
     ; Free redundant memory take by program
     ; to allow using malloc
     call FreeProgramMem
+    call AllocateDblBuffer
 
     ut_init_lib
     gr_set_video_mode_vga
@@ -42,21 +43,21 @@ start:
 
     ;----- NO PASS
     ;call TestBmp
-    call TestShapes
     ;;;;call TestSprite
     ;;;;call TestAnim
     ;;;;call TestMySprite
     ;;;;call TestDblBuffering
     
     ;------ PASS
+    call TestShapes
     ;call TestSound
     ;call TestRandomAndPrint
     ;call TestPrint
    
 exit:
     call WaitForKeypress    
+    call ReleaseDblBuffer
     gr_set_video_mode_txt
-
     return 0
 
 END start

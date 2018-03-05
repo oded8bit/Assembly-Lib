@@ -242,7 +242,7 @@ MACRO gr_set_pixel x, y, color
   
 _NotDbl:    
   mov ax, y
-  mov bx, 320
+  mov bx, VGA_SCREEN_WIDTH
   mul bx
   mov di, ax
   add di, x
@@ -307,11 +307,24 @@ ENDP GR_ClearRect
 ; Clears the entire screen 
 ;----------------------------------------------------------
 MACRO clear_screen
-  ;gr_set_video_mode_vga
+  local _NotDbl, _out
+
+  push es ds di ax cx
+
+  IsDblBuffering _NotDbl
+  GetDblBufferSeg es
+
+_NotDbl:
     xor   di,di
     xor   ax,ax
-    mov   cx,VGA_SCREEN_WIDTH*VGA_SCREEN_HEIGHT
+    mov   cx,VGA_SCREEN_WIDTH*VGA_SCREEN_HEIGHT/2
     rep   stosw
+
+    IsDblBuffering _out
+    call CopyDblBufToVideo
+
+_out:
+    pop cx ax di ds es
 ENDM
 ;----------------------------------------------------------
 ; Clears the entire screen 

@@ -22,8 +22,9 @@ LOCALS @@
 ;----------------------------------------------------------
 PROC GR_DrawCircle
    store_sp_bp
-   sub sp, 10
+   sub sp, 4
    pusha
+   push es
 
     ; now the stack is
     ; bp-4 => y
@@ -34,6 +35,11 @@ PROC GR_DrawCircle
     ; bp+6 => param3 (Ycenter)
     ; bp+8 => param2 (Xcenter)
     ; saved registers
+
+
+  IsDblBuffering @@NotDbl
+  GetDblBufferSeg es
+@@NotDbl:    
 
     mov cx, 0               ; x = 0
     mov bx, [word bp+4]     ; radius
@@ -62,10 +68,10 @@ PROC GR_DrawCircle
 @@2pixels:
     neg       si 
 
-    mov al, [gr_pen_color]
+    mov al,   [gr_pen_color]      ; color
     push      di 
     add       di,si 
-    imul      di,[GR_SCREEN_WIDTH] 
+    imul      di,VGA_SCREEN_WIDTH
     add       di,dx 
     push di
     add       di, cx
@@ -76,6 +82,7 @@ PROC GR_DrawCircle
     pop       di 
     ret
 @@fin:
+    pop es
     popa
     restore_sp_bp
     ret 6
