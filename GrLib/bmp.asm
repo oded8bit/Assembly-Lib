@@ -626,10 +626,10 @@ PROC SendPalStruct
                             ; values of up to 63. Dividing by 4
                             ; gives a good value.
     out dx,al               ; Send it.
-    mov al,[ds:si+1]           ; Get green value.
+    mov al,[ds:si+1]        ; Get green value.
     shr al,2
     out dx,al               ; Send it.
-    mov al,[ds:si]             ; Get blue value.
+    mov al,[ds:si]          ; Get blue value.
     shr al,2
     out dx,al               ; Send it.
 
@@ -643,6 +643,72 @@ PROC SendPalStruct
     restore_sp_bp
     ret 4
 ENDP SendPalStruct 
+;----------------------------------------------------------------------
+; Save Palette from BMP to a file
+;
+; Input:
+;   push bmp struct address
+;   push bmp struct seg
+;   push pal file name address
+;   call SavePalette
+;----------------------------------------------------------------------
+PROC SavePalette
+    store_sp_bp
+    pusha
+    push es
+    push ds
+    
+    ; now the stack is
+	; bp+0 => old base pointer
+	; bp+2 => return address
+	; bp+4 => file name address
+	; bp+6 => struct segment
+	; bp+8 => struct address
+	; saved registers
+
+    ;{
+    fileNameAddress         equ         [word bp+4]
+    structSegment           equ         [word bp+6]
+    structAddress           equ         [word bp+8]
+    ;}
+
+    push structSegment
+    pop ds
+
+    mov si, structAddress
+    add si, BMP_PALETTE_OFFSET  ; Point to buffer containing palette.
+
+    mov di, structAddress
+    add di, BMP_PALETTE_SIZE_OFFSET
+
+    ; create file
+    utm_fnew fileNameAddress, [_dss]
+    jc @@exit                           ; error
+    utm_fopen fileNameAddress, [_dss]
+
+    mov cx,[ds:di]          ; CX = Number of colors 
+    xor ax,ax
+@@saveLoop:    
+    mov al,[ds:si+2]        ; Get red value.
+    utm_fwriteByte ax
+    mov al,[ds:si+1]        ; Get green value.
+    utm_fwriteByte ax
+    mov al,[ds:si]          ; Get blue value.
+    utm_fwriteByte ax
+
+    add si,4
+
+    loop @@saveLoop
+
+@@exit:
+    utm_fclose
+
+    pop ds
+    pop es
+    popa
+    restore_sp_bp
+    ret 6
+ENDP SavePalette
 ;------------------------------------------------------------------------
 ; BMP graphics are saved upside-down. This procedure reads the graphic
 ; line by line, displaying the lines from bottom to top. The line at

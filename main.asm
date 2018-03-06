@@ -47,7 +47,8 @@ start:
     ;call TestGetKey
     ;call TestBmp
     ;call TestShapes
-    call TestSound
+    ;call TestSound
+    call TestSavePalette
     ;call TestRandomAndPrint
     ;call TestPrint
     ;call TestMySprite

@@ -159,7 +159,7 @@ PROC fread
 	ret 6
 ENDP fread
 ;------------------------------------------------------------------
-; Reads from a file
+; Write to a file
 ;
 ; push length
 ; push segment of buffer
@@ -199,6 +199,44 @@ PROC fwrite
     restore_sp_bp
 	ret 6
 ENDP fwrite
+;------------------------------------------------------------------
+; Write a byte to a file
+;
+; push value (byte)
+; call Fwrite
+;
+; Output:
+;   _fHandle, _fErr
+;   ax - number of bytes written
+;------------------------------------------------------------------
+PROC fwriteByte
+    store_sp_bp
+    pusha	
+    push ds
+    ; now the stack is
+	; bp+0 => old base pointer
+	; bp+2 => return address
+	; bp+4 => value
+	; saved registers        
+    mov dx, bp      	        ; value offset
+    add dx, 4                   ; this is the bp+4 offset
+    push ss                     ; on ss segment
+    pop ds                      ; value seg
+    mov cx, 1                   ; length
+    mov bx,[cs:_fHandle]
+	mov ah,40h
+	int 21h
+	mov bl,0
+	jnc @@fwrite0
+	mov bl,al
+	sub ax,ax
+@@fwrite0:
+    mov [cs:_fErr],bl
+    pop ds
+	popa
+    restore_sp_bp
+	ret 2
+ENDP fwriteByte
 ;------------------------------------------------------------------
 ; Delete a file
 ;
@@ -336,4 +374,13 @@ MACRO utm_fchangeAttr attrib, pathOffset, pathSegment
     push pathOffset
     push pathSegment
     call fchangeAttr
+ENDM
+;----------------------------------------------------------------------
+; Write a single byte to file
+;
+; utm_fwriteByte (valueB)
+;----------------------------------------------------------------------
+MACRO utm_fwriteByte valueB
+    push valueB
+    call fwriteByte
 ENDM

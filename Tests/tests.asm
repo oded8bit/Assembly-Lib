@@ -23,6 +23,8 @@ DATASEG
     _polygon                dw      5,30,100,50,200,100,120,80,20,50
 
     _keyPressedMsg          db      "Key was pressed","$"
+
+    _paletteFile            db      "asset\\bmp.pal",0
 CODESEG
 
 ;///////////////////////////// BMP
@@ -194,3 +196,19 @@ PROC TestGetKey
 @@exit:
     ret
 ENDP TestGetKey
+
+;///////////////////////////// SAVE PALETTE
+PROC TestSavePalette
+    push offset _bmp_file
+    push [_dss]
+    push offset _bmp
+    push [_dss]
+    call LoadBMPImage
+
+    push offset _bmp
+    push [_dss]
+    push offset _paletteFile
+    call SavePalette
+
+    ret
+ENDP TestSavePalette
