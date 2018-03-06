@@ -412,7 +412,7 @@ Another example, a 2 seconds delay is equal to (2*1,000,000) 001E 8480 and a 1 m
 
 # Keyboard
 Most keyboard functions are accessible via interrupts and the library focuses on some less trivial parts of handling the keyboard.
-A list of keyboard [scan codes](http://stanislavs.org/helppc/scan_codes.html) can be found at [keymap.asm](UtiLib/keymap.inc)
+A list of keyboard [scan codes](http://stanislavs.org/helppc/scan_codes.html) can be found at [keymap.asm](UtilLib/keymap.inc)
 
 ### Repeat Rate
 Setting keyboard yypematic rate to defalt (repeat delay and rate)
