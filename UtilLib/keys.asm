@@ -14,6 +14,8 @@ LOCALS @@
 DATASEG
   _Key	            db 0,0,0			;keyscan (word),_Key code(call keys)
 
+  include   "UtilLib\keymap.inc"
+
 CODESEG
   _OldKeyboardISR 	    dw 0,0			;old keyboard ISR vector adress
 
@@ -74,6 +76,18 @@ PROC ConsumeKey
     int 16h
     ret
 ENDP ConsumeKey
+;------------------------------------------------------------------
+; Get keyboard key if available
+;------------------------------------------------------------------
+PROC GetKeyboardKey
+    mov ax,0
+    call GetKeyboardStatus
+    jnz @@exit
+    ;call ConsumeKey
+@@exit:    
+    ret
+ENDP GetKeyboardKey
+
 ;------------------------------------------------------------------
 ; Install a keyboard interrupt
 ;

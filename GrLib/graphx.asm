@@ -304,7 +304,7 @@ PROC GR_ClearRect
     ret 8
 ENDP GR_ClearRect
 ;----------------------------------------------------------
-; Clears the entire screen 
+; Clears the entire screen (VGA mode)
 ;----------------------------------------------------------
 MACRO clear_screen
   local _NotDbl, _out
@@ -333,4 +333,10 @@ MACRO clear_screen_mouse
   HideMouse
   clear_screen
   ShowMouse
+ENDM
+;----------------------------------------------------------
+; Clears the entire screen (TXT mode)
+;----------------------------------------------------------
+MACRO clear_screen_txt
+    gr_set_video_mode_txt
 ENDM

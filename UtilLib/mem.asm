@@ -374,4 +374,93 @@ PROC ScreenCpyTo
     restore_sp_bp
     ret 16
 ENDP ScreenCpyTo
+;----------------------------------------------------------
+; Sets the content of the memory addressed by 
+; Param1:Param2 for N bytes to the given value
+;
+; push 10         ; length in bytes
+; push ds         ; segment
+; push offset mem ; offset
+; push value
+; call ZeroMemByte
+;----------------------------------------------------------
+PROC ZeroMemByte
+  store_sp_bp
+  push ax                          
+  push bx                  
+  push cx        
+  push es                          
 
+  ; now the stack is
+	; bp+0 => old base pointer
+	; bp+2 => return address
+	; bp+4 => param4 (value)
+	; bp+6 => param3 (offset)
+	; bp+8 => param2 (seg)
+	; bp+10 => param1 (length)
+	; saved registers
+
+  mov cx, [WORD bp+4]              ; value
+  mov ax, [WORD bp+10]             ; length
+  test ax,ax                       ; See if the requested length is zero
+  js   @@ZeroMemBEP                ; Jump to the end of the procedure if yes
+  mov bx,[WORD PTR BP+6]           ; BX is now equal to the requested offset
+  mov es,[WORD PTR BP+8]           ; ES is now equal to the requested segment
+  @@ZeroMemBLoop:                  
+    mov     [BYTE PTR ES:BX] , cl  ; Move one byte to ES:[BX]
+    inc bx                         
+    dec ax                         ; Decrement the counter
+    jne  @@ZeroMemBLoop            
+  pop es      
+  pop cx
+  pop bx                           
+  pop ax                           
+  @@ZeroMemBEP:                    
+  restore_sp_bp
+  ret 8
+ENDP ZeroMemByte
+;----------------------------------------------------------
+; Sets the content of the memory addressed by 
+; Param1:Param2 for N words to the given value
+;
+; push 10         ; length in words
+; push ds         ; segment
+; push offset mem ; offset
+; push value
+; call ZeroMemWord
+;----------------------------------------------------------
+PROC ZeroMemWord
+  store_sp_bp
+  push ax                          
+  push bx      
+  push cx                    
+  push es                          
+
+  ; now the stack is
+	; bp+0 => old base pointer
+	; bp+2 => return address
+	; bp+4 => param4 (value)
+	; bp+6 => param3 (offset)
+	; bp+8 => param2 (seg)
+	; bp+10 => param1 (length)
+	; saved registers
+
+  mov cx, [WORD bp+4]              ; value
+  mov ax, [word bp+10]             ; length
+  test ax,ax                       ; See if the requested length is zero
+  js   @@ZeroMemWEP                ; Jump to the end of the procedure if yes
+  mov bx,[WORD PTR BP+6]           ; BX is now equal to the requested offset
+  mov es,[WORD PTR BP+8]           ; ES is now equal to the requested segment
+  @@ZeroMemWLoop:                  
+    mov     [WORD PTR ES:BX] , cx  ; Move one word to ES:[BX]
+    add bx,2                         
+    dec ax                         ; Decrement the counter
+    jne  @@ZeroMemWLoop            
+  pop es   
+  pop cx
+  pop bx                           
+  pop ax                           
+  @@ZeroMemWEP:                    
+  restore_sp_bp
+  ret 8
+ENDP ZeroMemWord

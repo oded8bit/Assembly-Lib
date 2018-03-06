@@ -12,16 +12,17 @@
 LOCALS @@
 
 DATASEG
-    _bmp_file    db      "asset\\b.bmp",0
-    _bmp         db      BMP_STRUCT_SIZE dup(0)
+    _bmp_file               db      "asset\\b.bmp",0
+    _bmp                    db      BMP_STRUCT_SIZE dup(0)
 
-    _sprite_w       equ         30
-    _sprite_frames  equ         6
-    _sprite_file db      "asset\\sprite1.bmp",0
-    _sprite      db      BMP_STRUCT_SIZE dup(0)
+    _sprite_w               equ     30
+    _sprite_frames          equ     6
+    _sprite_file            db      "asset\\sprite1.bmp",0
+    _sprite                 db      BMP_STRUCT_SIZE dup(0)
 
-    _polygon    dw     5,30,100,50,200,100,120,80,20,50
+    _polygon                dw      5,30,100,50,200,100,120,80,20,50
 
+    _keyPressedMsg          db      "Key was pressed","$"
 CODESEG
 
 ;///////////////////////////// BMP
@@ -92,6 +93,7 @@ PROC TestSound
     utm_Beep bx
     utm_Sleep 1
     utm_StopBeep
+    utm_Sleep 1
     add bx, 80h  
     
     loop @@ss
@@ -160,3 +162,35 @@ PROC TestShapes
     ret    
 ENDP TestShapes
 
+;///////////////////////////// GET KEY
+PROC TestGetKey
+
+    gr_set_video_mode_txt
+
+@@top:    
+    call GetKeyboardKey
+    jnz @@cont
+    
+    push ax
+
+    ; key was pressed
+    mov dx, offset _keyPressedMsg
+    call PrintStr
+
+    call PrintSpace
+    pop ax
+    mov dx,ax
+    call PrintChar
+
+    cmp ax, SC_Q
+    je @@exit
+
+    utm_Sleep 1
+    clear_screen_txt
+
+@@cont:
+    jmp @@top
+
+@@exit:
+    ret
+ENDP TestGetKey

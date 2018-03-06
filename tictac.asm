@@ -25,14 +25,15 @@ CODESEG
     ; Include library (order is important!)
     include "UtilLib.inc"
     include "GrLib.inc"
-    ; Include tests
-    include "Tests/tests.asm"
+    ; Include game
+    include "Tests/tic/bg.asm"
+    include "Tests/tic/game.asm"
 
 start:
 	mov ax, @data
 	mov ds,ax
 
-    mov ax, TRUE
+    mov ax, FALSE
     ut_init_lib ax
 
     ; -- DOUBLE BUFFERING
@@ -43,18 +44,9 @@ start:
     gr_set_video_mode_vga
     gr_set_color GR_COLOR_GREEN
   
-    ;------ Tests
-    ;call TestGetKey
-    ;call TestBmp
-    ;call TestShapes
-    call TestSound
-    ;call TestRandomAndPrint
-    ;call TestPrint
-    ;call TestMySprite
+    call PlayTic
    
 exit:
-    call WaitForKeypress 
-
     ; -- DOUBLE BUFFERING   
     ; call ReleaseDblBuffer
 

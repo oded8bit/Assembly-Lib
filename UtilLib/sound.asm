@@ -62,9 +62,11 @@ ENDP Beep
 ; Stop beep by destroying AL
 ;----------------------------------------------------------------------
 PROC StopBeep
+    push ax
     in al, 061H
     and al, 0FCH
     out 061H, al
+    pop ax
     ret
 ENDP StopBeep
 
