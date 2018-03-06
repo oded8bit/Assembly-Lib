@@ -90,8 +90,8 @@ END start
 
 Build the program using
 ```sh
-tasm /zi test.asm
-tlink /v test
+tasm /zi main.asm
+tlink /v main
 ```
 
 # PROCs and MACROs
@@ -114,10 +114,6 @@ or using a wrapper MACRO
 Make sure you pass the arguments in the right order. All procedures preserve register values, unless stated otherwise.
 Macros (not including wrapper macros), on the other hand, may alter register values. Check out their documentation for details.
 
-# Testing the library and code samples
-The [Tests](Tests/tests.asm) folder includes a testing file that demonstrates the use of various parts of the library. the test program itself 
-can be found at the root and is called [test.asm](test.asm)
-
 # Initializing the library
 At the beginning of your code, you need to initialize the library by calling:
 ```sh
@@ -127,6 +123,18 @@ At the beginning of your code, you need to initialize the library by calling:
 ```
 
 The flag shoule be set to TRUE if you intend to dynamically allocate memory in your program. See  [memory management](UtilLib/mem.asm)
+
+# Testing the library and code samples
+The [Tests](Tests/tests.asm) folder includes a testing file that demonstrates the use of various parts of the library. the test program itself 
+can be found at the root and is called [test.asm](test.asm)
+
+# TicTac Game
+A simple TicTac game that uses many of the library's features, was added to the library. You can compile and run the game using:
+```sh
+tasm /zi tictac.asm
+tlink /v tictac
+```
+The game itself can be found under [Tests/tic folder](Tests/tic)
 
 ### Data Segment 
 The library stores the original data segment (DS register) using a global variable **_dss** that you can access at any time if you need to restore its value.
