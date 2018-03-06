@@ -12,7 +12,7 @@
 LOCALS @@
 
 DATASEG
-    _bmp_file    db      "asset\\bat.bmp",0
+    _bmp_file    db      "asset\\b.bmp",0
     _bmp         db      BMP_STRUCT_SIZE dup(0)
 
     _polygon    dw     5,30,100,50,200,100,120,80,20,50
@@ -30,9 +30,10 @@ PROC TestBmp
 
     push offset _bmp
     push [_dss]
-    push 10
+    push 0
     push 10
     call DisplayBMP
+    ;call TileBmp
 
     call WaitForKeypress  
 

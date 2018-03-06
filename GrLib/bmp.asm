@@ -62,20 +62,26 @@ PROC LoadBMPImage
 	; bp+10 => path address
 	; saved registers
 
+    ;{
+    pathAddress         equ         [word bp+10]
+    pathSegment         equ         [word bp+8]
+    structAddress       equ         [word bp+6]
+    structSegment       equ         [word bp+4]
+    ;}
 
-    push [word bp+10]       ; path address
-    push [word bp+8]        ; path seg
+    push pathAddress       ; path address
+    push pathSegment        ; path seg
     call fopen              ; Open file pointed to by DS:DX
 
     push ds
-    push [word bp+4]
+    push structSegment
     pop ds
 
     ; init ptr to NULL
-    mov si,[word bp+6]
+    mov si,structAddress
     add si, BMP_DATA_SEG_OFFSET
     mov [word ds:si], 0
-    mov si,[word bp+6]
+    mov si,structAddress
     add si, BMP_DATA_SIZE_OFFSET
     mov [word ds:si],0
 
@@ -86,22 +92,22 @@ PROC LoadBMPImage
     jne @@FileErr           ; Error? Display error message and quit
 
     mov bx,[cs:_fHandle]     ; Put the file handle in BX
-    push [word bp+6]        ; struct addr
-    push [word bp+4]        ; struct seg    
+    push structAddress        ; struct addr
+    push structSegment        ; struct seg    
     call ReadHeaderToStruct ; Reads the 54-byte header containing file info
 
     jc @@InvalidBMP         ; Not a valid BMP file? Show error and quit
 
-    push [word bp+6]        ; struct addr
-    push [word bp+4]        ; struct seg    
+    push structAddress        ; struct addr
+    push structSegment        ; struct seg    
     call ReadPalStruct      ; Read the BMP's palette and put it in a buffer
 
-    ;push [word bp+6]        ; struct addr
-    ;push [word bp+4]        ; struct seg    
-    ;call SendPalStruct      ; Send the palette to the video registers
+    push structAddress        ; struct addr
+    push structSegment        ; struct seg    
+    call SendPalStruct      ; Send the palette to the video registers
 
-    push [word bp+6]        ; struct addr
-    push [word bp+4]        ; struct seg    
+    push structAddress        ; struct addr
+    push structSegment        ; struct seg    
     call LoadBMPData
 
     call fclose             ; Close the file
@@ -155,38 +161,50 @@ PROC DisplayBMP
     ; bp+10 => struct address
     ; saved registers
 
-    push es
-    push [word bp+8]           ; struct seg
+    ;{
+    varWidth            equ         [word bp-2]
+    varHeight           equ         [word bp-4]
+    varY                equ         [word bp-6]
+    varY_               equ         bp-6
+    varLineWidth        equ         [word bp-8]
+    varLineHeight       equ         [word bp-10]
+
+    structAddress       equ         [word bp+10]
+    structSegment       equ         [word bp+8]
+    xtop                equ         [word bp+6]
+    xtop_               equ         bp+6
+    ytop                equ         [word bp+4]
+    ;}
+
+    push structSegment          ; struct seg
     pop ds
     
     ; check if data was allocated. if not abort
-    mov si, [word bp+10]       ; struct add
+    mov si, structAddress       ; struct add
     add si, BMP_DATA_SEG_OFFSET
-    cmp [word es:si], 0
+    cmp [word ds:si], 0
     je @@err_coord
 
-    pop es
-
-    push [word bp+10]           ; struct addr
-    push [word bp+8]            ; struct seg    
+    push structAddress          ; struct addr
+    push structSegment          ; struct seg    
     call SendPalStruct
 
-    push [word bp+8] 
+    push structSegment 
     pop ds                      ; ds = struct seg
 
-    mov di, [word bp+10]        ; ds:di = struct ptr
+    mov di, structAddress       ; ds:di = struct ptr
 
     mov si, di
     add si, BMP_HEIGHT_OFFSET
     mov cx, [word ds:si]        
-    mov [word bp-4], cx         ; Height
-    mov [word bp-10], cx         ; Height
+    mov varHeight, cx           ; Height
+    mov varLineHeight, cx       ; Height
     mov dx, [word ds:si+2]      
-    mov [word bp-2], dx         ; Width
-    mov [word bp-8], dx         ; Img Width
+    mov varWidth, dx            ; Width
+    mov varLineWidth, dx        ; Img Width
 
     ; check Xtop 
-    mov ax, [word bp+6]
+    mov ax, xtop
     cmp ax, VGA_SCREEN_WIDTH
     ja @@err_coord
 
@@ -195,7 +213,7 @@ PROC DisplayBMP
 
 @@check_y:
     ; if (Ytop > SCREEN HEIGHT) exit
-    mov ax, [word bp+4]
+    mov ax, ytop
     cmp ax, VGA_SCREEN_HEIGHT
     ja @@err_coord
 
@@ -204,46 +222,52 @@ PROC DisplayBMP
     jl @@err_coord   
 
 @@check_h:
-    mov ax,[word bp+4]          ; ytop
+    mov ax,ytop                 ; ytop
     add ax,cx                   ; ytop + h
     cmp ax,VGA_SCREEN_HEIGHT
     jbe @@check_w               ; if (ytop + height < screen height)
                                 ; else
     mov ax, VGA_SCREEN_HEIGHT
-    sub ax,[word bp+4]
-    mov [word bp-4], ax         ; height = VGA_SCREEN_HEIGHT - Ytop
+    sub ax,ytop
+    mov varHeight, ax           ; height = VGA_SCREEN_HEIGHT - Ytop
     mov cx,ax
 
     ; since the image is upside down, we need to move the di addr
-    mov ax, [word bp-10]
+    mov ax, varLineHeight
     sub ax, cx                  ; VGA_SCREEN_HEIGHT - height
-    mul [word bp-8]             ; * img width
+    mul varLineWidth            ; * img width
     add di, ax
 
 @@check_w:
-    mov ax,[word bp+6]          ; xtop
+    mov ax,xtop                 ; xtop
     add ax,dx
     cmp ax,VGA_SCREEN_WIDTH
-    jbe @@ok                     ; if (xtop + width < screen width)
+    jbe @@ok                    ; if (xtop + width < screen width)
                                 ; else
     mov ax, VGA_SCREEN_WIDTH
-    sub ax,[word bp+6]
-    mov [word bp-2], ax         ; width = VGA_SCREEN_WIDTH - Xtop
+    sub ax,xtop
+    mov varWidth, ax            ; width = VGA_SCREEN_WIDTH - Xtop
 
 @@ok:
     mov si, di
     add si, BMP_DATA_SEG_OFFSET
-    ;add si, BMP_DATA_OFFSET
-    ;push [word bp+8] 
-    push [word si]
-    pop ds                      ; ds:si = data ptr
 
+    push [_dss]
+    pop ds
     push [word GR_START_ADDR]
     pop es
 
-    mov ax, [word bp+4]         ; yTop
-    add ax, [word bp-4]         ; height
-    mov [word bp-6],ax          ; y=Ytop+Height
+    push structSegment
+    pop ds
+    push [word ds:si]
+    pop ds                      ; ds:si = data ptr
+
+    mov ax, ytop                ; yTop
+    add ax, varHeight           ; height
+    mov varY,ax                 ; y=Ytop+Height
+    
+    xor di,di
+    xor si,si
 
     ; cx = height, ds:si = data, es:di = screen
  @@DrawLoop:
@@ -251,17 +275,17 @@ PROC DisplayBMP
     push si
     
     cld                         ; Clear direction flag, for movsb.
-    mov cx, [word bp-2]         ; width
-    translate_coord_to_vga_addr bp+6,bp-6
+    mov cx, varWidth            ; width
+    translate_coord_to_vga_addr xtop_, varY_
 
     ; source DS:SI
     ; dest   ES:DI
     ; len    CX
     rep movsb                   ; Copy line in buffer to screen.
     pop si
-    add si, [word bp-8]         ; si += img width
+    add si, varLineWidth        ; si += img width
 
-    dec [word bp-6]             ; y--
+    dec varY                    ; y--
 
     pop cx
     loop @@DrawLoop
@@ -650,19 +674,26 @@ PROC LoadBMPData
 	; bp+6 => struct address
 	; saved registers
 
-    push [word bp+4]
+    ;{
+    varWidth                equ         [word bp-2]
+    varHeight               equ         [word bp-4]
+    structSegment           equ         [word bp+4]
+    structAddress           equ         [word bp+6]
+    ;}
+
+    push structSegment
     pop ds
 
-    mov si,[word bp+6]
+    mov si,structAddress
     add si, BMP_HEIGHT_OFFSET
 
     mov cx,[word ds:si]          ; height - We're going to display that many lines
-    mov [word bp-4], cx
+    mov varHeight, cx
 
     mov si,[word bp+6]
     add si, BMP_WIDTH_OFFSET
     mov dx, [ds:si]             ; width
-    mov [word bp-2], dx
+    mov varWidth, dx
 
     push dx
     ; allocate memory  
@@ -677,7 +708,7 @@ PROC LoadBMPData
     pop dx
 
     ; store pointer to data
-    mov si,[word bp+6]
+    mov si,structAddress
     add si, BMP_DATA_SEG_OFFSET
     mov [word ds:si],ax
 
@@ -685,7 +716,7 @@ PROC LoadBMPData
     pop es
     xor si,si               ; es:si - pointer to data start
 
-    mov cx,[word bp-4]      ; height 
+    mov cx,varHeight        ; height 
 @@ShowLoop:
     push dx                 ; width
     push si                 ; addr
