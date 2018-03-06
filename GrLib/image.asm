@@ -17,7 +17,7 @@ LOCALS @@
 ; Copy a posrtion of the screen (x,y) into ScreenCache
 ; 
 ; Input: 
-;   memStore = memory variable offset that stores the data. Should be in the right length (w*h)
+;   memStore = memory variable offset that stores the data. Should be in the correct length (w*h)
 ;   x = top left X coordinate (must be 0..320-width)
 ;   y = top left Y coordinate (must be 0..200-height)
 ;   w = width of the area to copy
@@ -226,3 +226,49 @@ PROC WriteBlackScreen
     restore_sp_bp
     ret 8
 ENDP WriteBlackScreen
+
+
+;////////////////////////////////////////////////////////////////////////////
+; FUNCTION LIKE MACROS
+;////////////////////////////////////////////////////////////////////////////
+
+;----------------------------------------------------------------------
+; Copy a posrtion of the screen (x,y) into ScreenCache
+;
+; grm_SaveScreen (memStore, x, y, w, h)
+;----------------------------------------------------------------------
+MACRO grm_SaveScreen memStore, x, y, w, h
+    push memStore
+    push x
+    push y
+    push w
+    push h
+    call SaveScreen
+ENDM
+
+;----------------------------------------------------------------------
+; Copy ScreenCache into the screen memory (x,y)
+;
+; grm_WriteScreen (memStore, x, y, w, h)
+;----------------------------------------------------------------------
+MACRO grm_WriteScreen memStore, x, y, w, h
+    push memStore
+    push x
+    push y
+    push w
+    push h
+    call WriteScreen
+ENDM
+
+;----------------------------------------------------------------------
+; Copy ScreenCache into the screen memory (x,y)
+;
+; grm_WriteBlackScreen (x, y, w, h)
+;----------------------------------------------------------------------
+MACRO grm_WriteBlackScreen x, y, w, h
+    push x
+    push y
+    push w
+    push h
+    call WriteBlackScreen
+ENDM

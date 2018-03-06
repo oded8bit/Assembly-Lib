@@ -1,0 +1,2 @@
+- image.asm functions need to be tested
+    (add segment for mem cache)
