@@ -128,6 +128,13 @@ At the beginning of your code, you need to initialize the library by calling:
 
 The flag shoule be set to TRUE if you intend to dynamically allocate memory in your program. See  [memory management](UtilLib/mem.asm)
 
+### Data Segment 
+The library stores the original data segment (DS register) using a global variable **_dss** that you can access at any time if you need to restore its value.
+```sh
+    push [_dss]
+    pop ds
+```
+
 # ---------------------------------------------------------------
 # Graphics Library
 
