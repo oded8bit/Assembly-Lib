@@ -1,3 +1,2 @@
-o) Sprites needs to be tested
 o) Animation needs to be tested
 

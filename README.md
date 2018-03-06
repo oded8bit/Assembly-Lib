@@ -318,9 +318,37 @@ or using MACROS:
 ```
 
 # Sprites
+The library support sprites, which is an image with multiple frames. Sprites are a great way to create animation or to hold multiple variants of an image.
+See an [example](asset/sprite1.bmp).
 
+Since sprites are standard BMP files, you load them normally and then can display any frame you select.
 
+```sh
+DATASEG
+    _sprite_w       equ         30
+    _sprite_frames  equ         6
+    _sprite_file db      "asset\\sprite1.bmp",0
+    _sprite      db      BMP_STRUCT_SIZE dup(0)
 
+CODESEG    
+    mov dx, offset _sprite_file         
+    push dx                         ; path address
+    push ds                         ; path segment
+    mov ax, offset _sprite          
+    push ax                         ; struct address
+    push ds                         ; struct segment
+    call LoadBMPImage
+
+    push 0                  ; frame index
+    push ax                 ; BMP struct address
+    push ds                 ; BMP struct segment
+    push 0064h              ; x coordinate
+    push 0064h              ; y coordinate
+    push _sprite_w          ; width of a single frame
+    push _sprite_frames     ; number of frames in BMP
+    call PlaySpriteInPlace    
+```
+Take a look at [TestMySprite](Tests/tests.asm) function as an example for playing animation using sprites.
 
 # ---------------------------------------------------------------
 # Utilities Library
