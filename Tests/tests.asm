@@ -30,24 +30,15 @@ CODESEG
 ;///////////////////////////// BMP
 PROC TestBmp
 
-    push offset _bmp_file
-    push [_dss]
-    push offset _bmp
-    push [_dss]
-    call LoadBMPImage
+    mov dx, offset _bmp_file
+    mov ax, offset _bmp
+    grm_LoadBMPImage dx, [_dss], ax, [_dss]
 
-    push offset _bmp
-    push [_dss]
-    push 0
-    push 10
-    call DisplayBMP
-    ;call TileBmp
+    mov ax, offset _bmp
+    grm_DisplayBMP  ax, [_dss], 0, 10
 
-    call WaitForKeypress  
-
-    push offset _bmp
-    push [_dss]
-    call FreeBmp
+    mov ax, offset _bmp
+    grm_FreeBmp ax, [_dss]
 
     ret
 ENDP TestBmp
@@ -56,23 +47,13 @@ ENDP TestBmp
 PROC TestMySprite
 
     mov dx, offset _sprite_file
-    push dx
-    push ds
     mov ax, offset _sprite
-    push ax
-    push ds
-    call LoadBMPImage
+    grm_LoadBMPImage dx, [_dss], ax, [_dss]
 
     mov bx,0
 @@kk:
-    push bx
-    push ax
-    push ds
-    push 0064h
-    push 0064h
-    push _sprite_w
-    push _sprite_frames
-    call PlaySpriteInPlace
+    grm_PlaySpriteInPlace bx, ax, ds, 0064h, 0064h, _sprite_w, _sprite_frames
+
     inc bx
 
     push 0003h
@@ -150,7 +131,7 @@ PROC TestShapes
 
     call WaitForKeypress  
     
-    clear_screen
+    clear_screen_vga
     call WaitForKeypress    
 
     gr_set_color GR_COLOR_BLUE
@@ -199,16 +180,13 @@ ENDP TestGetKey
 
 ;///////////////////////////// SAVE PALETTE
 PROC TestSavePalette
-    push offset _bmp_file
-    push [_dss]
-    push offset _bmp
-    push [_dss]
-    call LoadBMPImage
+    mov dx, offset _bmp_file
+    mov ax, offset _bmp
+    grm_LoadBMPImage dx, [_dss], ax, [_dss]
 
-    push offset _bmp
-    push [_dss]
-    push offset _paletteFile
-    call SavePalette
+    mov ax, offset _bmp
+    mov bx, offset _paletteFile
+    grm_SavePalette ax, [_dss], bx
 
     ret
 ENDP TestSavePalette

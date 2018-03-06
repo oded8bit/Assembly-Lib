@@ -322,35 +322,45 @@ PROC TileBmp
     ; bp+4 => struct seg
     ; bp+6 => struct add
     ; saved registers
+
+    ;{
+    varY        equ         [word bp-8]
+    varX        equ         [word bp-6]
+    varHeight   equ         [word bp-4]
+    varWidth    equ         [word bp-2]
+
+    structSeg   equ         [word bp+4]
+    structAddr  equ         [word bp+6]
+    ;}
  
-    push [word bp+4] 
+    push structSeg 
     pop ds                      ; ds = struct seg
-    mov di, [word bp+6]         ; ds:di = struct ptr
+    mov di, structAddr         ; ds:di = struct ptr
 
     mov si, di
     add si, BMP_HEIGHT_OFFSET
     mov cx, [word ds:si]        
-    mov [word bp-4], cx         ; Height
+    mov varHeight, cx         ; Height
     mov dx, [word ds:si+2]      
-    mov [word bp-2], dx         ; Width
+    mov varWidth, dx         ; Width
 
-    mov [word bp-8],0           ; y = 0
-    mov [word bp-6],0           ; x = 0
+    mov varY,0           ; y = 0
+    mov varX,0           ; x = 0
 
 @@draw:
-    push [word bp+6]
-    push [word bp+4]
-    push [word bp-6]
-    push [word bp-8]
+    push structAddr
+    push structSeg
+    push varX
+    push varY
     call DisplayBMP
 
-    add [word bp-6],dx          ; x += width
-    cmp [word bp-6],VGA_SCREEN_WIDTH
+    add varX,dx          ; x += width
+    cmp varX,VGA_SCREEN_WIDTH
     jb @@draw
 
-    mov [word bp-6],0           ; x = 0
-    add [word bp-8],cx          ; y += height
-    cmp [word bp-8], VGA_SCREEN_HEIGHT
+    mov varX,0           ; x = 0
+    add varY,cx          ; y += height
+    cmp varY, VGA_SCREEN_HEIGHT
     jb @@draw
     
 @@end:
@@ -359,31 +369,6 @@ PROC TileBmp
     restore_sp_bp
     ret 4      ; <--- set return value
 ENDP TileBmp
-
-;------------------------------------------------------------------------
-; Displays the BMP on the screen
-;
-; DeleteBMP seg, struct
-;------------------------------------------------------------------------
-;MACRO DeleteBMP bmp_seg, bmp_struct
-;    local _end
-;    push si
-;    push es
-;    push ds
-;    mov ds, bmp_seg
-;    mov si,offset bmp_struct
-;    add si, BMP_DATA_SEG_OFFSET
-;    cmp [word ds:si],0
-;    jz _end                         ; NULL pointer
-;    push [word ds:si]
-;    pop es
-;    HeapFree
-;    mov [word ds:si],0              ; mark as NULL
-;_end:    
-;    pop ds
-;    pop es
-;    pop si
-;ENDM
 ;------------------------------------------------------------------------
 ; This procedure checks to make sure the file is a valid BMP,
 ; and gets some information about the graphic.
@@ -403,23 +388,28 @@ PROC ReadHeaderToStruct
 	; bp+6 => struct address
 	; saved registers
 
+    ;{
+    structSeg   equ         [word bp+4]
+    structAddr  equ         [word bp+6]
+    ;}
+
     mov cx,BMP_HEADER_LEN
-    mov dx,[word bp+6]
+    mov dx,structAddr
     add dx, BMP_HEADER_OFFSET
 
     push cx                 ; length
     push dx                 ; header address
-    push [word bp+4]        ; segment
+    push structSeg        ; segment
     call fread              ; read header
 
-    push [word bp+6]
-    push [word bp+4]
+    push structAddr
+    push structSeg
     call CheckValidStruct   ; Is it a valid BMP file?
 
     jc @@RHdone             ; No? Quit.    
 
-    push [word bp+6]
-    push [word bp+4]
+    push structAddr
+    push structSeg
     call GetBMPInfoStruct   ; Otherwise, process the header.
 
 @@RHdone:
@@ -448,11 +438,16 @@ PROC CheckValidStruct
 	; bp+6 => struct address
 	; saved registers
 
+    ;{
+    structSeg   equ         [word bp+4]
+    structAddr  equ         [word bp+6]
+    ;}
+
     clc                     ; clear carry flag
-    mov si,[word bp+6]
+    mov si,structAddr
     add si,BMP_HEADER_OFFSET
     
-    push [word bp+4]        ; seg
+    push structSeg        ; seg
     pop es
 
     mov di,offset BMPStart
@@ -498,30 +493,34 @@ PROC GetBMPInfoStruct
 	; bp+6 => struct address
 	; saved registers
 
+    ;{
+    structSeg   equ         [word bp+4]
+    structAddr  equ         [word bp+6]
+    ;}
 
-    mov si, [word bp+6]
+    mov si, structAddr
     add si, BMP_HEADER_OFFSET       ; si = header address within struct
 
-    push [word bp+4]
+    push structSeg
     pop es                          ; header seg   (es:si)
 
     mov ax, [word es:si+0aH]
     sub ax,BMP_HEADER_LEN           ; Subtract the length of the header
     shr ax,2                        ; and divide by 4
     
-    mov bx, [word bp+6]
+    mov bx, structAddr
     add bx, BMP_PALETTE_SIZE_OFFSET
     mov [es:bx],ax                  ; to get the number of colors in the BMP
                                     ; (Eachpalette entry is 4 bytes long).
                                     ;mov ax,header[12h] ; AX = Horizontal resolution (width) of BMP.
 
     mov ax, [word es:si+12h]
-    mov bx, [word bp+6]
+    mov bx, structAddr
     add bx, BMP_WIDTH_OFFSET
     mov [es:bx],ax                  ; Store it.
                                     ;mov ax,header[16h] ; AX = Vertical resolution (height) of BMP.
     mov dx, [word es:si+16h]
-    mov bx, [word bp+6]
+    mov bx, structAddr
     add bx, BMP_HEIGHT_OFFSET
     mov [es:bx],dx                  ; Store it.
 
@@ -529,7 +528,7 @@ PROC GetBMPInfoStruct
     ; dx = height
     shr ax,4                        ; ax / 16 (# of mem paragraphs)
     mul dx                          ; w * h
-    mov bx, [word bp+6]
+    mov bx, structAddr
     add bx, BMP_DATA_SIZE_OFFSET
     mov [es:bx],ax                  ; Store it.   
 
@@ -557,16 +556,21 @@ PROC ReadPalStruct
 	; bp+6 => struct address
 	; saved registers
     
-    push [word bp+4]
+    ;{
+    structSeg   equ         [word bp+4]
+    structAddr  equ         [word bp+6]
+    ;}
+    
+    push structSeg
     pop es
 
-    mov si, [word bp+6]
+    mov si, structAddr
     add si, BMP_PALETTE_SIZE_OFFSET
 
     mov cx,[es:si]          ; CX = Number of colors in palette.
     shl cx,2                ; CX = Multiply by 4 to get size (in bytes)
                             ; of palette.
-    mov dx, [word bp+6]
+    mov dx, structAddr
     add dx, BMP_PALETTE_OFFSET
     
     push cx
@@ -603,13 +607,18 @@ PROC SendPalStruct
 	; bp+6 => struct address
 	; saved registers
 
-    push [word bp+4]
+    ;{
+    structSeg   equ         [word bp+4]
+    structAddr  equ         [word bp+6]
+    ;}
+
+    push structSeg
     pop ds
 
-    mov si, [word bp+6]
+    mov si, structAddr
     add si, BMP_PALETTE_OFFSET  ; Point to buffer containing palette.
 
-    mov di, [word bp+6]
+    mov di, structAddr
     add di, BMP_PALETTE_SIZE_OFFSET
 
     mov cx,[ds:di]          ; CX = Number of colors to send.
@@ -756,7 +765,7 @@ PROC LoadBMPData
     mov cx,[word ds:si]          ; height - We're going to display that many lines
     mov varHeight, cx
 
-    mov si,[word bp+6]
+    mov si,structAddress
     add si, BMP_WIDTH_OFFSET
     mov dx, [ds:si]             ; width
     mov varWidth, dx
@@ -839,3 +848,64 @@ PROC FreeBmp
     restore_sp_bp
     ret 4               
 ENDP FreeBmp
+
+;////////////////////////////////////////////////////////////////////////////
+; FUNCTION LIKE MACROS
+;////////////////////////////////////////////////////////////////////////////
+
+;----------------------------------------------------------------------
+; Load BMP from file 
+;
+; grm_LoadBMPImage (pathAddress, pathSegment, tructAddress, structSegment)
+;----------------------------------------------------------------------
+MACRO grm_LoadBMPImage pathAddress, pathSegment, structAddress, structSegment
+    push pathAddress 
+    push pathSegment 
+    push structAddress
+    push structSegment
+    call LoadBMPImage
+ENDM
+
+;----------------------------------------------------------------------
+; Displays a BMP
+;
+; grm_DisplayBMP (tructAddress, structSegment, xtop, ytop)
+;----------------------------------------------------------------------
+MACRO grm_DisplayBMP structAddress, structSegment, xtop, ytop
+    push structAddress
+    push structSegment
+    push xtop
+    push ytop
+    call DisplayBMP
+ENDM
+;----------------------------------------------------------------------
+; Tile a BMP
+;
+; grm_TileBmp (tructAddress, structSegment)
+;----------------------------------------------------------------------
+MACRO grm_TileBmp structAddress, structSegment
+    push structAddress
+    push structSegment
+    call DisplayBMP
+ENDM
+;----------------------------------------------------------------------
+; Save palette to file
+;
+; grm_SavePalette (XXX, XXX)
+;----------------------------------------------------------------------
+MACRO grm_SavePalette structAddress, structSegment, fileAddress
+    push structAddress
+    push structSegment
+    push fileAddress
+    call SavePalette
+ENDM
+;----------------------------------------------------------------------
+; Free BMP
+;
+; grm_FreeBmp (tructAddress, structSegment)
+;----------------------------------------------------------------------
+MACRO grm_FreeBmp structAddress, structSegment
+    push structAddress
+    push structSegment
+    call FreeBmp
+ENDM

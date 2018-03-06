@@ -159,10 +159,11 @@ This macro takes into account double buffering and will draw to the buffer (if s
 It is **highly recommended** to use this macto whenever you want to draw to the VGA screen.
 
 ### Clearing the screen
-There are 2 ways to clear the screen, or a portion of the screen
+There are 3 ways to clear the screen, or a portion of the screen
 ```sh
-clear_screen - macro that very efficiently clears the entire screen
-GR_ClearRect - procedure that clears a rectangle on the screen
+clear_screen_vga - macro that very efficiently clears the entire screen (VGA mode)
+GR_ClearRect - procedure that clears a rectangle on the screen (VGA mode)
+clear_screen_txt - macro that very efficiently clears the entire screen (TXT mode)
 ```
 
 # Drawing Shapes

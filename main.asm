@@ -45,10 +45,10 @@ start:
   
     ;------ Tests
     ;call TestGetKey
-    ;call TestBmp
+    call TestBmp
     ;call TestShapes
     ;call TestSound
-    call TestSavePalette
+    ;call TestSavePalette
     ;call TestRandomAndPrint
     ;call TestPrint
     ;call TestMySprite

@@ -160,3 +160,23 @@ PROC PlaySpriteInPlace
     restore_sp_bp
     ret 14
 ENDP PlaySpriteInPlace
+
+;////////////////////////////////////////////////////////////////////////////
+; FUNCTION LIKE MACROS
+;////////////////////////////////////////////////////////////////////////////
+
+;----------------------------------------------------------------------
+; 
+;
+; grm_XXXX (XXX, XXX)
+;----------------------------------------------------------------------
+MACRO grm_PlaySpriteInPlace index_to_draw, bmp_struct_addr, bmp_struct_seg, x, y, sprite_w, num_sprites
+    push index_to_draw
+    push bmp_struct_addr
+    push bmp_struct_seg
+    push x
+    push y
+    push sprite_w
+    push num_sprites
+    call PlaySpriteInPlace
+ENDM

@@ -306,7 +306,7 @@ ENDP GR_ClearRect
 ;----------------------------------------------------------
 ; Clears the entire screen (VGA mode)
 ;----------------------------------------------------------
-MACRO clear_screen
+MACRO clear_screen_vga
   local _NotDbl, _out
 
   push es ds di ax cx
@@ -331,7 +331,7 @@ ENDM
 ;----------------------------------------------------------
 MACRO clear_screen_mouse
   HideMouse
-  clear_screen
+  clear_screen_vga
   ShowMouse
 ENDM
 ;----------------------------------------------------------
