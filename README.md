@@ -64,15 +64,14 @@ start:
 	mov ax, @data
 	mov ds,ax
 
-    ; Free redundant memory take by program
-    ; to allow using malloc
-    call FreeProgramMem
-    
+    ; Init library
+    mov ax, TRUE
+    ut_init_lib ax
+  
     ; Allocate double buffering memory space
     call AllocateDblBuffer
 
-    ; Init library and set display to VGA mode
-    ut_init_lib
+    ; set display to VGA mode
     gr_set_video_mode_vga
 
     ; Set initial pen color
@@ -118,6 +117,16 @@ Macros (not including wrapper macros), on the other hand, may alter register val
 # Testing the library and code samples
 The [Tests](Tests/tests.asm) folder includes a testing file that demonstrates the use of various parts of the library. the test program itself 
 can be found at the root and is called [test.asm](test.asm)
+
+# Initializing the library
+At the beginning of your code, you need to initialize the library by calling:
+```sh
+    ; Init library
+    mov ax, FALSE
+    ut_init_lib ax
+```
+
+The flag shoule be set to TRUE if you intend to dynamically allocate memory in your program. See  [memory management](UtilLib/mem.asm)
 
 # ---------------------------------------------------------------
 # Graphics Library
@@ -250,6 +259,11 @@ This will allocate the memory for the BMP headers (struct). Memory allocation fo
 allocated in RAM when loading the data.
 
 **You must** use "call FreeProgramMem" before trying to load images or you will get an out of memory situation and the allocation will fail.
+Note that you can implicitly call it by passing TRUE to ut_init_lib:
+```sh
+    mov ax, TRUE
+    ut_init_lib TRUE
+```
 
 To load a BMP image, call:
 ```sh
@@ -554,6 +568,12 @@ beginning of your program by calling:
     call FreeProgramMem
 ```
 If you forget to call it, all memory allocations will fail on "out of memory".
+
+Note that you can implicitly call it by passing TRUE to ut_init_lib:
+```sh
+    mov ax, TRUE
+    ut_init_lib TRUE
+```
 
 ### Allocating a block
 Allocating a memory block is done by calling:

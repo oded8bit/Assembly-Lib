@@ -32,31 +32,35 @@ start:
 	mov ax, @data
 	mov ds,ax
 
+    mov ax, TRUE
+    ut_init_lib ax
+
+    ; -- DOUBLE BUFFERING
     ; Free redundant memory take by program
     ; to allow using malloc
-    call FreeProgramMem
-    call AllocateDblBuffer
+    ; call AllocateDblBuffer
 
-    ut_init_lib
     gr_set_video_mode_vga
     gr_set_color GR_COLOR_GREEN
 
     ;----- NO PASS
-    ;call TestBmp
+    call TestBmp
     ;;;;call TestSprite
     ;;;;call TestAnim
     ;;;;call TestMySprite
-    ;;;;call TestDblBuffering
     
     ;------ PASS
-    call TestShapes
+    ;call TestShapes
     ;call TestSound
     ;call TestRandomAndPrint
     ;call TestPrint
    
 exit:
-    call WaitForKeypress    
-    call ReleaseDblBuffer
+    call WaitForKeypress 
+
+    ; -- DOUBLE BUFFERING   
+    ; call ReleaseDblBuffer
+
     gr_set_video_mode_txt
     return 0
 

@@ -18,8 +18,15 @@ CODESEG
 ;------------------------------------------------------------------------
 ; Initialization - call at the beginning of your program
 ;------------------------------------------------------------------------
-MACRO ut_init_lib
+MACRO ut_init_lib freeMem
+  local _out
   mov [_dss], ds
+  cmp freeMem, FALSE
+  je _out
+  ; Free redundant memory take by program
+  ; to allow using malloc
+  call FreeProgramMem
+_out:  
 ENDM
 ;----------------------------------------------------------
 ; called at the beginnig of each PROC to store
