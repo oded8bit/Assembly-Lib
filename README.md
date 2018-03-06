@@ -359,6 +359,17 @@ CODESEG
 ```
 Take a look at [TestMySprite](Tests/tests.asm) function as an example for playing animation using sprites.
 
+### Copy screen to buffer and visa versa
+The library provide functions for copying a portion of the screen to a buffer and visa versa (from a buffer to the screen).
+
+```sh
+grm_SaveScreen memAddress, memSeg, x, y, w, h
+```
+
+```sh
+grm_WriteScreen memAddress, memSeg, x, y, w, h
+```
+
 # ---------------------------------------------------------------
 # Utilities Library
 
@@ -661,6 +672,27 @@ Copies memory from one address to another
     call MemCpy
 ```
 
+### Initialize memory block
+You can set a byte or word value to an entire memory block
+```sh
+    mov ax, offset _blcok
+
+    push 10             ; length_in_bytes
+    push ds             ; block_segment
+    push ax             ; block_offset
+    push 0              ; value
+    call ZeroMemByte
+```
+and
+```sh
+    mov ax, offset _blcok
+    
+    push 5              ; length_in_words
+    push ds             ; block_segment
+    push ax             ; block_offset
+    push 0              ; value
+    call ZeroMemWord
+```
 
 # Sound
 You can make a beep with the following procedure. Note that the sound will continue until you stop it
