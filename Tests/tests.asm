@@ -15,6 +15,11 @@ DATASEG
     _bmp_file    db      "asset\\b.bmp",0
     _bmp         db      BMP_STRUCT_SIZE dup(0)
 
+    _sprite_w       equ         30
+    _sprite_frames  equ         6
+    _sprite_file db      "asset\\sprite1.bmp",0
+    _sprite      db      BMP_STRUCT_SIZE dup(0)
+
     _polygon    dw     5,30,100,50,200,100,120,80,20,50
 
 CODESEG
@@ -43,6 +48,40 @@ PROC TestBmp
 
     ret
 ENDP TestBmp
+
+;///////////////////////////// SPRITES
+PROC TestMySprite
+
+    mov dx, offset _sprite_file
+    push dx
+    push ds
+    mov ax, offset _sprite
+    push ax
+    push ds
+    call LoadBMPImage
+
+    mov bx,0
+@@kk:
+    push bx
+    push ax
+    push ds
+    push 0064h
+    push 0064h
+    push _sprite_w
+    push _sprite_frames
+    call PlaySpriteInPlace
+    inc bx
+
+    push 0003h
+    call Delay
+
+    cmp bx,_sprite_frames
+    jb @@kk
+    mov bx,0
+    jmp @@kk           ; uncomment for infinite loop
+@@outer:    
+    ret
+ENDP TestMySprite
 
 ;///////////////////////////// SOUND
 PROC TestSound
