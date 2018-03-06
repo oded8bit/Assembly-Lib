@@ -131,7 +131,7 @@ can be found at the root and is called [test.asm](test.asm)
 # TicTac Game
 A simple TicTac game that uses many of the library's features, was added to the library. You can compile and run the game using:
 ```sh
-tasm /zi tictac.asm
+tasm /zi [tictac.asm](tictac.asm)
 tlink /v tictac
 ```
 The game itself can be found under [Tests/tic folder](Tests/tic)
