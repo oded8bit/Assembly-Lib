@@ -1,14 +1,13 @@
 ;===================================================================================================
-; Assembly Library
+; TicTac game
 ;
-; File Name: test.asm
 ; Written By: Oded Cnaan (oded.8bit@gmail.com)
 ; Site: http://odedc.net 
 ; Licence: GPLv3 (see LICENSE file)
 ; Package: AsmLib
 ;
 ; Description: 
-; Testing program for the package
+; A simple tictac game to demonstrate the library
 ;===================================================================================================
 LOCALS @@
 .486

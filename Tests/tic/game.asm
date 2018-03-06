@@ -1,3 +1,14 @@
+;===================================================================================================
+; TicTac game
+;
+; Written By: Oded Cnaan (oded.8bit@gmail.com)
+; Site: http://odedc.net 
+; Licence: GPLv3 (see LICENSE file)
+; Package: AsmLib
+;
+; Description: 
+; A simple tictac game to demonstrate the library
+;===================================================================================================
 LOCALS @@
 
 DATASEG
