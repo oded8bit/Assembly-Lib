@@ -359,6 +359,8 @@ CODESEG
 ```
 Take a look at [TestMySprite](Tests/tests.asm) function as an example for playing animation using sprites.
 
+Here is an example of a [sprite image](asset/sprite1.bmp)
+
 ### Copy screen to buffer and visa versa
 The library provide functions for copying a portion of the screen to a buffer and visa versa (from a buffer to the screen).
 
