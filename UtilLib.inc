@@ -1,7 +1,6 @@
 ;===================================================================================================
 ; Assembly Utilities Library
 ;
-; File Name: UtilLib.inc
 ; Written By: Oded Cnaan (oded.8bit@gmail.com)
 ; Site: http://odedc.net 
 ; Licence: GPLv3 (see LICENSE file)

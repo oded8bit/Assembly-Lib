@@ -87,7 +87,25 @@ PROC GetKeyboardKey
 @@exit:    
     ret
 ENDP GetKeyboardKey
-
+;------------------------------------------------------------------
+; Get keyboard flags
+; Output: AL
+;|7|6|5|4|3|2|1|0|  AL or BIOS Data Area 40:17
+;		 | | | | | | | `---- right shift key depressed
+;		 | | | | | | `----- left shift key depressed
+;		 | | | | | `------ CTRL key depressed
+;		 | | | | `------- ALT key depressed
+;		 | | | `-------- scroll-lock is active
+;		 | | `--------- num-lock is active
+;		 | `---------- caps-lock is active
+;		 `----------- insert is active
+;------------------------------------------------------------------
+PROC GetKeyboardFlags
+    xor ax,ax
+    mov ah,2
+    int 16h
+    ret
+ENDP GetKeyboardFlags
 ;------------------------------------------------------------------
 ; Install a keyboard interrupt
 ;

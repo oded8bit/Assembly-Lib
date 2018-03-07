@@ -467,6 +467,21 @@ Taking the pressed key out of the keyboard buffer
 call ConsumeKey
 ```
 
+### Get keyboard flags
+```sh
+call GetKeyboardFlags
+```
+Returns AL:
+|7|6|5|4|3|2|1|0|  AL or BIOS Data Area 40:17
+		 | | | | | | | `---- right shift key depressed
+		 | | | | | | `----- left shift key depressed
+		 | | | | | `------ CTRL key depressed
+		 | | | | `------- ALT key depressed
+		 | | | `-------- scroll-lock is active
+		 | | `--------- num-lock is active
+		 | `---------- caps-lock is active
+		 `----------- insert is active
+
 ### Install & Restore a Keyboard ISR
 You can replace the default keyboard interrupt with your own by calling this procedure 
 ```sh
@@ -513,6 +528,13 @@ On return:
 After getting mouse coordinates from **GetMouseStatus**, you can translate them to VGA coordinates by calling
 ```sh
 TranslateMouseCoords
+```
+
+### Set Mouse Cursor Position
+```sh
+mov cx, 3       ; horizontal
+mov dx, 5       ; vertical
+SetMousePosition
 ```
 
 ### Installing and Restoring Mouse ISR
