@@ -5,3 +5,6 @@
 *.exe
 *.map
 *.tr
+
+#files
+*.pal

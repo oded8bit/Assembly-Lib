@@ -588,6 +588,18 @@ or using MACROS:
 ```sh
 utm_fclose
 ```
+
+### Get File Size
+```sh
+push address_of_file_name
+push segment_of_file_name
+call fsize
+```
+or using MACROS:
+```sh
+utm_fsize address_of_file_name, segment_of_file_name
+```
+
 ### Read from a File
 ```sh
 push length

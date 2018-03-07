@@ -13,7 +13,7 @@ LOCALS @@
 .486
 IDEAL
 MODEL small
-STACK 256
+STACK 512
 
 DATASEG
 
@@ -51,6 +51,7 @@ start:
     ;call TestPrint
     ;call TestMySprite
     ;call Test2DArray
+    ;call TestFile
    
 exit:
     call WaitForKeypress 

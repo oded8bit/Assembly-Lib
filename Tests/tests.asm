@@ -30,6 +30,8 @@ DATASEG
     _arrCols    equ     3
     _arr2d      dw      _arrCols*_arrRows dup(1)
 
+    _palette        db              400h dup(0)
+
 CODESEG
 
 ;///////////////////////////// BMP
@@ -193,6 +195,11 @@ PROC TestSavePalette
     mov bx, offset _paletteFile
     grm_SavePalette ax, [_dss], bx
 
+    push offset _paletteFile
+    push ds
+    push offset _palette
+    push ds
+    call LoadPalette
     ret
 ENDP TestSavePalette
 
@@ -212,3 +219,11 @@ PROC Test2DArray
     setWordValue2dArray 66, bx, 2,1, _arrCols
     ret
 ENDP Test2DArray
+
+;///////////////////////////// FILES
+PROC TestFile
+    mov bx, offset _sprite_file
+
+    utm_fsize bx, ds
+    ret
+ENDP TestFile

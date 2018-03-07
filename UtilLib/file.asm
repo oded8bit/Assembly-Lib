@@ -310,6 +310,66 @@ PROC fchangeAttr
     restore_sp_bp
 	ret 6
 ENDP fchangeAttr
+;------------------------------------------------------------------------
+; Gets the size of a file
+; 
+; Input:
+;     push file path address 
+;     push file path segment
+;     call ffilesize
+; 
+; Output:
+;     DS:AX - file size, -1 on error
+; 
+; fsize( path, seg )
+;------------------------------------------------------------------------
+PROC fsize
+    store_sp_bp
+    push bx cx
+ 
+    ; now the stack is
+    ; bp+0 => old base pointer
+    ; bp+2 => return address
+    ; bp+4 => file path seg
+    ; bp+6 => file path address
+    ; saved registers
+ 
+    ;{
+    pathSegment_        equ        [word bp+4]
+    pathAddress_        equ        [word bp+6]
+    ;}
+ 
+    push pathAddress_ 
+    push pathSegment_
+    call fopen
+
+    cmp [cs:_fErr], 0
+    jne @@error                     ; cannot open file
+
+    ; seek to end
+    mov ah, 42h
+    mov al, 2                       ; end of file plus offset  (SEEK_END)
+    mov bx, [cs:_fHandle]
+    xor cx, cx
+    xor dx, dx
+    int 21h                         ; will set dx:ax
+
+    jnc @@close                     ; no error
+    jmp @@error                     ; error
+
+@@close:
+    call fclose
+    jmp @@end
+@@error:
+    call fclose
+    mov ax,0ffffh
+    mov dx,0ffffh
+@@end:
+    pop cx bx 
+    restore_sp_bp
+    ret 4
+ENDP fsize
+
 
 ;////////////////////////////////////////////////////////////////////////////
 ; FUNCTION LIKE MACROS
@@ -336,6 +396,16 @@ MACRO utm_fnew pathOffset, pathSegment
     call fnew
 ENDM
 ;----------------------------------------------------------------------
+; Gets file size
+;
+; utm_fsize (pathOffset, pathSegment)
+;----------------------------------------------------------------------
+MACRO utm_fsize pathOffset, pathSegment
+    push pathOffset
+    push pathSegment
+    call fsize
+ENDM
+;----------------------------------------------------------------------
 ; Close a file
 ;
 ; utm_fclose
@@ -348,11 +418,22 @@ ENDM
 ;
 ; utm_fwrite (length, bufOffset, bufSegment)
 ;----------------------------------------------------------------------
-MACRO utm_fqrite length, bufOffset, bufSegment
+MACRO utm_fwrite length, bufOffset, bufSegment
     push length
     push bufOffset
     push bufSegment
     call fwrite
+ENDM
+;----------------------------------------------------------------------
+; Read from a file
+;
+; utm_fread (length, bufOffset, bufSegment)
+;----------------------------------------------------------------------
+MACRO utm_fread length, bufOffset, bufSegment
+    push length
+    push bufOffset
+    push bufSegment
+    call fread
 ENDM
 ;----------------------------------------------------------------------
 ; Deletes a file

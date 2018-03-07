@@ -34,6 +34,8 @@ LOCALS @@
     BMP_DATA_SEG_OFFSET     equ         43Eh
     BMP_DATA_SIZE_OFFSET    equ         440h   
 
+    BMP_MAX_PAL_SIZE        equ         1024
+
 DATASEG   
     BMPStart        db  'BM'
     msgInvBMP       db  "Not a valid BMP file.",7,0Dh,0Ah,24h
@@ -653,7 +655,7 @@ PROC SendPalStruct
     ret 4
 ENDP SendPalStruct 
 ;----------------------------------------------------------------------
-; Save Palette from BMP to a file
+; Save Palette from BMP to a PAL file
 ;
 ; Input:
 ;   push bmp struct address
@@ -718,6 +720,61 @@ PROC SavePalette
     restore_sp_bp
     ret 6
 ENDP SavePalette
+;------------------------------------------------------------------------
+; Load Palette from a PAL file
+;
+; Input:
+;   push pal file name address
+;   push pal file name segment
+;   push buffer address
+;   push buffer seg
+;   call LoadPalette
+;------------------------------------------------------------------------
+PROC LoadPalette
+    store_sp_bp
+    push bx
+    push es
+    push ds
+    
+    ; now the stack is
+	; bp+0 => old base pointer
+	; bp+2 => return address
+	; bp+4 => buffer segment
+	; bp+6 => buffer address
+	; bp+8 => file name seg
+	; bp+10 => file name address
+	; saved registers
+
+    ;{
+    bufferSegment           equ         [word bp+4]
+    bufferAddress           equ         [word bp+6]
+    fileNameSegment         equ         [word bp+8]
+    fileNameAddress         equ         [word bp+10]
+    ;}
+
+    utm_fsize fileNameAddress, fileNameSegment
+    ; assuming size of PAL < FFFE so we ignore DX
+    cmp ax, BMP_MAX_PAL_SIZE
+    ja @@error
+
+    utm_fopen fileNameAddress, fileNameSegment
+    utm_fread ax, bufferAddress, bufferSegment
+
+    jmp @@ok
+@@error:
+    mov ax, FALSE
+    jmp @@exit
+@@ok:
+    mov ax, TRUE
+@@exit:
+    utm_fclose
+
+    pop ds
+    pop es
+    pop bx
+    restore_sp_bp
+    ret 8
+ENDP LoadPalette
 ;------------------------------------------------------------------------
 ; BMP graphics are saved upside-down. This procedure reads the graphic
 ; line by line, displaying the lines from bottom to top. The line at
