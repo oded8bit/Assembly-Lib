@@ -14,14 +14,9 @@ The library provides the following graphics capabilities:
 5. Draw closed [polygons](GrLib/poly.asm) (outline only)
 6. Draw [circles](GrLib/circle.asm) (outline and filled)
 7. Draw [Bitmaps](GrLib/bmp.asm) 
-8. Draw images [images](GrLib/image.asm) 
-9. Draw animated [sprites](GrLib/anim.asm)
+8. [Images & screen](GrLib/image.asm) manipulations
+9. Draw [sprites](GrLib/anim.asm) and animation
 10. Support for [Double buffering](GrLib/dblbuf.asm)
-
-To include the graphics library use the following at the top of your CODESEG
-```sh
-    include "GrLib.inc"
-```
 
 # Utilities
 The library contains an utility package with many useful macros and procedures such as:
@@ -34,11 +29,6 @@ The library contains an utility package with many useful macros and procedures s
 7. Support for playing [sound](UtilLib/sound.asm)
 8. [Time](UtilLib/time.asm) functions for delays
 
-To include the graphics library use the following at the top of your CODESEG. Note that this include
-**MUST** come before including the graphics library.
-```sh
-    include "UtilLib.inc"
-```
 
 # Using the library
 To use the libraries, include the files in your code as follows:
@@ -47,6 +37,7 @@ CODESEG
     include "UtilLib.inc"
     include "GrLib.inc"   
 ```
+Note that UtilLib.inc **MUST** come before GrLib.inc
 
 Here is a sample program that draws a line and waits for a key press, using double buffering:
 
@@ -61,10 +52,10 @@ CODESEG
     include "UtilLib.inc"
     include "GrLib.inc"   
 start:
-	mov ax, @data
-	mov ds,ax
+    mov ax, @data
+    mov ds,ax
 
-    ; Init library
+    ; Init library with double buffering flag on
     mov ax, TRUE
     ut_init_lib ax
   
@@ -99,16 +90,16 @@ The library provides many Procedures and Macros that you can use directly in you
 
 For example, you can draw a line using the PROC
 ```sh
-    push x1
-    push y1
-    push x2
-    push y2
-    call GR_DrawLine
+push x1
+push y1
+push x2
+push y2
+call GR_DrawLine
 ```
 or using a wrapper MACRO
 
 ```sh
-    grm_DrawLine x1, y1, x2, y2
+grm_DrawLine x1, y1, x2, y2
 ```
 
 Make sure you pass the arguments in the right order. All procedures preserve register values, unless stated otherwise.
@@ -117,6 +108,7 @@ Macros (not including wrapper macros), on the other hand, may alter register val
 # Initializing the library
 At the beginning of your code, you need to initialize the library by calling:
 ```sh
+CODESEG
     ; Init library
     mov ax, FALSE
     ut_init_lib ax
@@ -126,7 +118,7 @@ The flag shoule be set to TRUE if you intend to dynamically allocate memory in y
 
 # Testing the library and code samples
 The [Tests](Tests/tests.asm) folder includes a testing file that demonstrates the use of various parts of the library. the test program itself 
-can be found at the root and is called [test.asm](test.asm)
+can be found at the root and is called [main.asm](main.asm)
 
 # TicTac Game
 A simple TicTac game that uses many of the library's features, was added to the library. You can compile and run the game using:
@@ -134,14 +126,7 @@ A simple TicTac game that uses many of the library's features, was added to the 
 tasm /zi tictac.asm
 tlink /v tictac
 ```
-The game itself can be found under [Tests/tic folder](Tests/tic) and the main file is [tictac.asm](tictac.asm)
-
-### Data Segment 
-The library stores the original data segment (DS register) using a global variable **_dss** that you can access at any time if you need to restore its value.
-```sh
-    push [_dss]
-    pop ds
-```
+The game itself can be found under [Tests/tic](Tests/tic) folder and the main file is [tictac.asm](tictac.asm)
 
 # ---------------------------------------------------------------
 # Graphics Library
@@ -149,37 +134,38 @@ The library stores the original data segment (DS register) using a global variab
 ### Drawing a pixel
 The most basic macros handle drawing a single pixel on the screen, using direct memory access (not interrupt).
 ```sh
-gr_set_pixel x, y, color - draws a pixel in the given (x,y) coordinates with the given [color](GrLib/colors.asm)
-gr_set_pixel_xy  x,y - draws a pixel in the given (x,y) coordinates with the set [color](GrLib/colors.asm)
+gr_set_pixel    x, y, color - draws a pixel in the given (x,y) coordinates with the given color
+gr_set_pixel_xy x,y         - draws a pixel in the given (x,y) coordinates with the set color
 ```
 **Note** that x, y and color cannot use the following registers: ax, bx, di, dx
 
-This macro takes into account double buffering and will draw to the buffer (if set) instead of the video display.
+This macro takes into account double buffering and will draw to the buffer (if set) instead of the video display. See
+[Double Buffering](GrLib/dblbuf.asm) for details.
 
-It is **highly recommended** to use this macto whenever you want to draw to the VGA screen.
+It is **highly recommended** to use this macro whenever you want to draw to the VGA screen.
 
 ### Clearing the screen
 There are 3 ways to clear the screen, or a portion of the screen
 ```sh
-clear_screen_vga - macro that very efficiently clears the entire screen (VGA mode)
-GR_ClearRect - procedure that clears a rectangle on the screen (VGA mode)
-clear_screen_txt - macro that very efficiently clears the entire screen (TXT mode)
+clear_screen_vga    - macro that very efficiently clears the entire screen (VGA mode)
+GR_ClearRect        - procedure that clears a rectangle on the screen (VGA mode)
+clear_screen_txt    - macro that very efficiently clears the entire screen (TXT mode)
 ```
 
 # Drawing Shapes
 
 ### Drawing Lines
-Using a PROC:
+Drawing a line using a PROC:
 ```sh
-    push  50    ; x1
-    push  60    ; y1
-    push  120   ; x2
-    push 180    ; y2
-    call GR_DrawLine
+push  50    ; x1 
+push  60    ; y1 
+push  120   ; x2 
+push 180    ; y2
+call GR_DrawLine
 ```
 or using a MACRO:
 ```sh
-    grm_DrawLine 50, 60, 120, 180
+grm_DrawLine 50, 60, 120, 180
 ```
 
 ### Drawing Rectangles
@@ -187,28 +173,28 @@ You can either draw a rectangle outline or a filled one.
 
 Outline using a PROC:
 ```sh
-    push  50    ; x (top)
-    push  60    ; y (top)
-    push  120   ; width
-    push 180    ; height
-    call GR_DrawRect
+push  50    ; x (top)
+push  60    ; y (top)
+push  120   ; width
+push 180    ; height
+call GR_DrawRect
 ```
 or using a MACRO:
 ```sh
-    grm_DrawRect 50, 60, 120, 180
+grm_DrawRect 50, 60, 120, 180
 ```
 
 Filled using a PROC:
 ```sh
-    push  50    ; x (top)
-    push  60    ; y (top)
-    push  120   ; width
-    push 180    ; height
-    call GR_FillRect
+push  50    ; x (top)
+push  60    ; y (top)
+push  120   ; width
+push 180    ; height
+call GR_FillRect
 ```
 or using a MACRO:
 ```sh
-    grm_FillRect 50, 60, 120, 180
+grm_FillRect 50, 60, 120, 180
 ```
 
 ### Drawing Circles
@@ -216,26 +202,26 @@ You can either draw a circle outline or a filled one.
 
 Outline using a PROC:
 ```sh
-    push  150    ; X center
-    push  100    ; Y center
-    push  40   ; Radius
-    call GR_DrawCircle
+push  150    ; X center
+push  100    ; Y center
+push  40   ; Radius
+call GR_DrawCircle
 ```
 or using a MACRO:
 ```sh
-    grm_DrawCircle 150, 100, 40
+grm_DrawCircle 150, 100, 40
 ```
 
 Filled using a PROC:
 ```sh
-    push  150    ; X center
-    push  100    ; Y center
-    push  40   ; Radius
-    call GR_FillCircle
+push  150    ; X center
+push  100    ; Y center
+push  40   ; Radius
+call GR_FillCircle
 ```
 or using a MACRO:
 ```sh
-    grm_FillCircle 150, 100, 40
+grm_FillCircle 150, 100, 40
 ```
 
 ### Drawing Polygons
@@ -253,23 +239,21 @@ This is an array with the following points:
 
 Using a PROC:
 ```sh
-    push 3              ; there are 3 points
-    push offset _poly   ; pointer to _poly array
-    call GR_DrawPolygon
+push 3              ; there are 3 points
+push offset _poly   ; pointer to _poly array
+call GR_DrawPolygon
 ```
 or using a MACRO:
 ```sh
-    mov ax, offset _poly
-    grm_DrawPolygon 3, ax
+mov ax, offset _poly
+grm_DrawPolygon 3, ax
 ```
 
 # Using Bitmaps
 The library support only 8-bit bitmaps in v3. To load a bitmap, you need to define the following variable:
 ```sh
-    BMP_W           equ         30
-    BMP_H           equ         44
-    bmp_file        db "asset\\my_bmp.bmp",0
-    THE_BMP         db BMP_STRUCT_SIZE dup(0)
+_bmp_file               db      "asset\\b.bmp",0
+_bmp                    db      BMP_STRUCT_SIZE dup(0)
 ```
 This will allocate the memory for the BMP headers (struct). Memory allocation for the pixels' data will be 
 allocated in RAM when loading the data.
@@ -277,49 +261,58 @@ allocated in RAM when loading the data.
 **You must** use "call FreeProgramMem" before trying to load images or you will get an out of memory situation and the allocation will fail.
 Note that you can implicitly call it by passing TRUE to ut_init_lib:
 ```sh
-    mov ax, TRUE
-    ut_init_lib TRUE
+mov ax, TRUE
+ut_init_lib TRUE
 ```
 
 To load a BMP image, call:
 ```sh
-    mov dx, offset bmp_file
-    mov cx, offset THE_BMP      
-    
-    push dx                     ; path offset
-    push ds                     ; path segment
-    push cx                     ; bitmap struct offset
-    push ds                     ; bitmap struct segment
-    call LoadBMPImage
+mov dx, offset _bmp_file
+mov cx, offset _bmp      
+
+push dx                     ; path offset
+push ds                     ; path segment
+push cx                     ; bitmap struct offset
+push ds                     ; bitmap struct segment
+call LoadBMPImage
 ```
 or using a MACRO
 ```sh
-    grm_LoadBMPImage dx, ds, cx, ds
+mov dx, offset _bmp_file
+mov cx, offset _bmp      
+
+grm_LoadBMPImage dx, ds, cx, ds
 ```
 After loading the bitmap, you can draw it on the screen
 ```sh
-    push cx                     ; bitmap struct offset
-    push ds                     ; bitmap struct segment
-    push 000Ah                  ; xTop = 10
-    push 000Bh                  ; yTop = 11
-    call DisplayBMP
-    
-    ; instead, you can tile the image on the screen using
-    push cx
-    push ds
-    call TileBmp
+mov cx, offset _bmp      
+
+push cx                     ; bitmap struct offset
+push ds                     ; bitmap struct segment
+push 000Ah                  ; xTop = 10
+push 000Bh                  ; yTop = 11
+call DisplayBMP
+
+; instead, you can tile the image on the screen using
+push cx
+push ds
+call TileBmp
 ```
 or using MACROS:
 ```sh
-    grm_DisplayBMP  cx, ds, 000Ah, 000Bh
-    ; or
-    grm_TileBmp  cx, ds
+mov cx, offset _bmp      
+
+grm_DisplayBMP  cx, ds, 000Ah, 000Bh
+; or
+grm_TileBmp  cx, ds
 ```
 **You must** free the bitmap memory (when it is not needed anymore) by calling
 ```sh
-    push cx                     ; bitmap struct offset
-    push ds                     ; bitmap struct segment
-    call FreeBmp
+mov cx, offset _bmp      
+
+push cx                     ; bitmap struct offset
+push ds                     ; bitmap struct segment
+call FreeBmp
 ```
 or using MACROS:
 ```sh
@@ -327,7 +320,7 @@ or using MACROS:
 ```
 
 # Sprites
-The library support sprites, which is an image with multiple frames. Sprites are a great way to create animation or to hold multiple variants of an image.
+The library supports sprites, which is an image with multiple frames. Sprites are a great way to create animation or to hold multiple variants of an image.
 See an [example](asset/sprite1.bmp).
 
 Since sprites are standard BMP files, you load them normally and then can display any frame you select.
@@ -341,9 +334,10 @@ DATASEG
 
 CODESEG    
     mov dx, offset _sprite_file         
+    mov ax, offset _sprite          
+
     push dx                         ; path address
     push ds                         ; path segment
-    mov ax, offset _sprite          
     push ax                         ; struct address
     push ds                         ; struct segment
     call LoadBMPImage
@@ -357,6 +351,16 @@ CODESEG
     push _sprite_frames     ; number of frames in BMP
     call PlaySpriteInPlace    
 ```
+or using macros:
+```sh
+CODESEG    
+    mov dx, offset _sprite_file         
+    mov ax, offset _sprite          
+
+    grm_LoadBMPImage dx, ds, ax, ds
+    grm_PlaySpriteInPlace 0, ax, ds, 0064h, 0064h, _sprite_w, _sprite_frames
+```
+
 Take a look at [TestMySprite](Tests/tests.asm) function as an example for playing animation using sprites.
 
 Here is an example of a [sprite image](asset/sprite1.bmp)
@@ -382,6 +386,12 @@ The library includes other utilities that help developing assembly programs.
     return              - macro for returning control to DOS with a code
     cmpv                - macro that compare two memory variables
     movv                - moves a WORD from one memory to another via the stack
+```
+### Data Segment 
+The library stores the original data segment (DS register) using a global variable **_dss** that you can access at any time if you need to restore its value.
+```sh
+push [_dss]
+pop ds
 ```
 
 # Time and Delays
