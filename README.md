@@ -116,6 +116,8 @@ CODESEG
 
 The flag shoule be set to TRUE if you intend to dynamically allocate memory in your program. See  [memory management](UtilLib/mem.asm)
 
+**Note** that TRUE and FALSE are defined by the library as 1 and 0.
+
 # Testing the library and code samples
 The [Tests](Tests/tests.asm) folder includes a testing file that demonstrates the use of various parts of the library. the test program itself 
 can be found at the root and is called [main.asm](main.asm)
