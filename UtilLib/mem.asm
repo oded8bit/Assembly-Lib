@@ -382,9 +382,9 @@ ENDP ScreenCpyTo
 ; push ds         ; segment
 ; push offset mem ; offset
 ; push value
-; call ZeroMemByte
+; call SetMemByte
 ;----------------------------------------------------------
-PROC ZeroMemByte
+PROC SetMemByte
   store_sp_bp
   push ax                          
   push bx                  
@@ -418,7 +418,7 @@ PROC ZeroMemByte
   @@ZeroMemBEP:                    
   restore_sp_bp
   ret 8
-ENDP ZeroMemByte
+ENDP SetMemByte
 ;----------------------------------------------------------
 ; Sets the content of the memory addressed by 
 ; Param1:Param2 for N words to the given value
@@ -427,9 +427,9 @@ ENDP ZeroMemByte
 ; push ds         ; segment
 ; push offset mem ; offset
 ; push value
-; call ZeroMemWord
+; call SetMemWord
 ;----------------------------------------------------------
-PROC ZeroMemWord
+PROC SetMemWord
   store_sp_bp
   push ax                          
   push bx      
@@ -463,4 +463,4 @@ PROC ZeroMemWord
   @@ZeroMemWEP:                    
   restore_sp_bp
   ret 8
-ENDP ZeroMemWord
+ENDP SetMemWord

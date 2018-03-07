@@ -316,7 +316,7 @@ call FreeBmp
 ```
 or using MACROS:
 ```sh
-    grm_FreeBmp  cx, ds
+grm_FreeBmp  cx, ds
 ```
 
 # Sprites
@@ -377,15 +377,15 @@ grm_WriteScreen memAddress, memSeg, x, y, w, h
 ```
 
 # ---------------------------------------------------------------
-# Utilities Library
+# Utility Library
 
 The library includes other utilities that help developing assembly programs. 
 ```sh
-    store_sp_bp         - macro that stores and sets BP value. Called at the beginning of PROC
-    restore_sp_bp       - macro that restores BP, SP values. Called at the end of PROC
-    return              - macro for returning control to DOS with a code
-    cmpv                - macro that compare two memory variables
-    movv                - moves a WORD from one memory to another via the stack
+store_sp_bp         - macro that stores and sets BP value. Called at the beginning of PROC
+restore_sp_bp       - macro that restores BP, SP values. Called at the end of PROC
+return              - macro for returning control to DOS with a code
+cmpv                - macro that compare two memory variables
+movv                - moves a WORD from one memory to another via the stack
 ```
 ### Data Segment 
 The library stores the original data segment (DS register) using a global variable **_dss** that you can access at any time if you need to restore its value.
@@ -400,37 +400,37 @@ The library provides 3 different ways to delay your program:
 ### Sleep
 If you want your program to halt for a given number of seconds call the Sleep procedure
 ```sh
-    push 3              ; sleeps for 3 seconds
-    call Sleep
+push 3              ; sleeps for 3 seconds
+call Sleep
 ```
 or using MACROS:
 ```sh
-    utm_Sleep  3
+utm_Sleep  3
 ```
 
 ### Delay
 Delay program execution by X number of milliseconds. Actually, the argument is the number of 
 1/18 of a second
 ```sh
-    push 3              ; Delay for 3 * 1/18 of a sec
-    call Delay
+push 3              ; Delay for 3 * 1/18 of a sec
+call Delay
 ```
 Or:
 ```sh
-    utm_Delay 3
+utm_Delay 3
 ```
 
 ### DelayMS
 This function delays execution for given number of microseconds which are specified in 2 variables, one for the high order and one for the low order.
 For example, a 1 second delay (1 * 1,000,000 msec) is 000F 4240 and therfore the values will be
 ```sh
-    push 000Fh
-    push 4240h
-    call DelayMS
+push 000Fh
+push 4240h
+call DelayMS
 ```
 Or
 ```sh
-    utm_DelayMS 000Fh, 4240h
+utm_DelayMS 000Fh, 4240h
 ```
 Another example, a 2 seconds delay is equal to (2*1,000,000) 001E 8480 and a 1 millisecond is (1*1000) 0000 03EB
 
@@ -441,19 +441,19 @@ A list of keyboard [scan codes](http://stanislavs.org/helppc/scan_codes.html) ca
 ### Repeat Rate
 Setting keyboard yypematic rate to defalt (repeat delay and rate)
 ```sh
-    call SetKeyboardRateDefault
+call SetKeyboardRateDefault
 ```
 
 ### Wait for keypress
 Hold program execution until a key is pressed
 ```sh
-    call WaitForKeypress
+call WaitForKeypress
 ```
 
 ### Keyboard Status
 Getting keyboard status
 ```sh
-    call GetKeyboardStatus
+call GetKeyboardStatus
 ```
 Returns:
 ZF = 0 if a _Key pressed (even Ctrl-Break)
@@ -464,20 +464,20 @@ AL = ASCII character or zero if special function _Key
 ### Consume Key
 Taking the pressed key out of the keyboard buffer
 ```sh
-    call ConsumeKey
+call ConsumeKey
 ```
 
 ### Install & Restore a Keyboard ISR
 You can replace the default keyboard interrupt with your own by calling this procedure 
 ```sh
-    push isr_address 
-    call InstallKeyboardInterrupt
+push isr_address 
+call InstallKeyboardInterrupt
 ```
 For example:
 ```sh
-    lea dx,[my_interr]
-    push dx
-    call InstallKeyboardInterrupt
+lea dx,[my_interr]
+push dx
+call InstallKeyboardInterrupt
 ```
 You **must** restore the interrupt at the end of the program by calling
 ```sh
@@ -490,14 +490,14 @@ Most mouse functions are accessible via interrupts and the library focuses on so
 ### Show and Hide the mouse
 Use these macros to show / hide the mouse
 ```sh
-    ShowMouse
+ShowMouse
 
-    HideMouse
+HideMouse
 ```
 ### Get Mouse Status
 Mouse position and button status can be retrieved by
 ```sh
-    GetMouseStatus
+GetMouseStatus
 ```
 On return:
 	CX = horizontal (X) position  (0..639)
@@ -512,16 +512,16 @@ On return:
 ### Translate Mouse Coordinates
 After getting mouse coordinates from **GetMouseStatus**, you can translate them to VGA coordinates by calling
 ```sh
-    TranslateMouseCoords
+TranslateMouseCoords
 ```
 
 ### Installing and Restoring Mouse ISR
 You can replace the default mouse interrupt with your own by calling this procedure 
 ```sh
-    push ISR address
-    push ISR segment
-    push mask
-    call InstallMouseInterrupt
+push ISR address
+push ISR segment
+push mask
+call InstallMouseInterrupt
 ```
 You **must** restore the interrupt at the end of the program by calling
 ```sh
@@ -531,81 +531,81 @@ call UninstallMouseInterrupt
 # File System
 The library provide a set of functions to access and manipulate files. The library was designed to handle a single file at any time using the global variables
 ```sh
-    _fHandle - stores the handle of the openned file
-    _fErr - stores the error value
+_fHandle    - stores the handle of the openned file
+_fErr       - stores the error value
 ```
 
 ### Open a File
 ```sh
-    push address_of_file_name
-    push segment_of_file_name
-    call fopen
+push address_of_file_name
+push segment_of_file_name
+call fopen
 ```
 or using MACROS:
 ```sh
-    utm_fopen address_of_file_name, segment_of_file_name
+utm_fopen address_of_file_name, segment_of_file_name
 ```
 
 ### Create a New File
 ```sh
-    push address_of_file_name
-    push segment_of_file_name
-    call fnew
+push address_of_file_name
+push segment_of_file_name
+call fnew
 ```
 or using MACROS:
 ```sh
-    utm_fnew address_of_file_name, segment_of_file_name
+utm_fnew address_of_file_name, segment_of_file_name
 ```
 ### Close a File
 ```sh
-    call fclose
+call fclose
 ```
 or using MACROS:
 ```sh
-    utm_fclose
+utm_fclose
 ```
 ### Read from a File
 ```sh
-    push length
-    push address_of_buffer
-    push segment_of_buffer
-    call fread
+push length
+push address_of_buffer
+push segment_of_buffer
+call fread
 ```
 or using MACROS:
 ```sh
-    utm_fread address_of_buffer, segment_of_buffer
+utm_fread address_of_buffer, segment_of_buffer
 ```
 ### Write to a File
 ```sh
-    push length
-    push address_of_buffer
-    push segment_of_buffer
-    call fwrite
+push length
+push address_of_buffer
+push segment_of_buffer
+call fwrite
 ```
 or using MACROS:
 ```sh
-    utm_fwrite address_of_buffer, segment_of_buffer
+utm_fwrite address_of_buffer, segment_of_buffer
 ```
 ### Delete a File
 ```sh
-    push address_of_file_name
-    push segment_of_file_name
-    call fdelete
+push address_of_file_name
+push segment_of_file_name
+call fdelete
 ```
 or using MACROS:
 ```sh
-    utm_fdelete address_of_file_name, segment_of_file_name
+utm_fdelete address_of_file_name, segment_of_file_name
 ```
 ### Change File Attributes
 ```sh
-    push attribute
-    push address_of_file_name
-    push segment_of_file_name
-    call fchangeAttr
+push attribute
+push address_of_file_name
+push segment_of_file_name
+call fchangeAttr
 ```
 or using MACROS:
 ```sh
-    utm_fchangeAttr attribute, address_of_file_name, segment_of_file_name
+utm_fchangeAttr attribute, address_of_file_name, segment_of_file_name
 ```
 # Math 
 The library provide some basic math related functions and macros
@@ -613,41 +613,41 @@ The library provide some basic math related functions and macros
 ### Random Numbers
 Before generating a random number, you need to initialize the number generator by calling
 ```sh
-    call RandomSeed
+call RandomSeed
 ```
 and then you can use 
 ```sh
-    call RandomWord
+call RandomWord
 or
-    call RandomByte    
+call RandomByte    
 ```
 to get a random number in AX or AL
 
 ### Abs(x)
 You can get the absoilute value of a number 
 ```sh
-    gr_absolute number
+gr_absolute number
 ```
 
 # Memory Management
 The library allows managing (allocating, releasing) RAM memory. If you need to allocate dynamic memory, you **must** free unused memory at the
 beginning of your program by calling:
 ```sh
-    call FreeProgramMem
+call FreeProgramMem
 ```
 If you forget to call it, all memory allocations will fail on "out of memory".
 
 Note that you can implicitly call it by passing TRUE to ut_init_lib:
 ```sh
-    mov ax, TRUE
-    ut_init_lib TRUE
+mov ax, TRUE
+ut_init_lib TRUE
 ```
 
 ### Allocating a block
 Allocating a memory block is done by calling:
 ```sh
-    push size
-    call malloc
+push size
+call malloc
 ```
 Note that the size is measured in Paragraphs and therefore need to be divided by 16 (bytes)
 
@@ -663,64 +663,64 @@ Allocated memory is at AX:0000
 ### Release an allocated memory block
 Pass the segment address of the allocated memory block to release it
 ```sh
-    push segment
-    call mfree
+push segment
+call mfree
 ```
 
 ### Releasing all allocated blocks
 The library maintains an internal list of up to 50 allocated blocks that can be freed by calling
 ```sh
-    call mfreeAll
+call mfreeAll
 ```
 
 ### Memory Copy
 Copies memory from one address to another
 ```sh
-    push from_address
-    push from_seg
-    push to_address
-    push to_seg
-    push length_in_bytes
-    call MemCpy
+push from_address
+push from_seg
+push to_address
+push to_seg
+push length_in_bytes
+call MemCpy
 ```
 
 ### Initialize memory block
 You can set a byte or word value to an entire memory block
 ```sh
-    mov ax, offset _blcok
+mov ax, offset _blcok
 
-    push 10             ; length_in_bytes
-    push ds             ; block_segment
-    push ax             ; block_offset
-    push 0              ; value
-    call ZeroMemByte
+push 10             ; length_in_bytes
+push ds             ; block_segment
+push ax             ; block_offset
+push 0              ; value
+call SetMemByte
 ```
 and
 ```sh
-    mov ax, offset _blcok
-    
-    push 5              ; length_in_words
-    push ds             ; block_segment
-    push ax             ; block_offset
-    push 0              ; value
-    call ZeroMemWord
+mov ax, offset _blcok
+
+push 5              ; length_in_words
+push ds             ; block_segment
+push ax             ; block_offset
+push 0              ; value
+call SetMemWord
 ```
 
 # Sound
 You can make a beep with the following procedure. Note that the sound will continue until you stop it
 ```sh
-    push frequency
-    call Beep
+push frequency
+call Beep
 
-    utm_Sleep  2        ; wait 2 seconds
+utm_Sleep  2        ; wait 2 seconds
 
-    call StopBeep
+call StopBeep
 ```
 Or with macros:
 ```sh
-    utm_Beep freq
-    utm_Sleep 2
-    utm_StopBeep
+utm_Beep freq
+utm_Sleep 2
+utm_StopBeep
 ```
 
 # Print
@@ -728,25 +728,25 @@ This part of the library supports writting text to the screen
 
 ### Printing to the screeb
 ```sh
-    call PrintDecimal   - prints a value as a decimal number
+call PrintDecimal   - prints a value as a decimal number
 
-    call PrintChar      - prints DL as a char
-    PrintCharNewLine    - macro to print a char with new line
+call PrintChar      - prints DL as a char
+PrintCharNewLine    - macro to print a char with new line
 
-    call PrintByte      - prints DL (number between 0 and 15)
-    PrintByteNewLine    - macro to print a byte with a new line
+call PrintByte      - prints DL (number between 0 and 15)
+PrintByteNewLine    - macro to print a byte with a new line
 
-    call PrintStr       - prints a string. DS:DX pointer to string ending in "$"
-    PrintStrNewLine     - macro to print a string with a new line
+call PrintStr       - prints a string. DS:DX pointer to string ending in "$"
+PrintStrNewLine     - macro to print a string with a new line
 
-    call PrintNewLine   - prints a new line
-    call PrintSpace     - prints a space char
+call PrintNewLine   - prints a new line
+call PrintSpace     - prints a space char
 ```
 
 ### Printing in VGA
 ```sh
-    call PrintCharVGA   - prints a character on VGA display (DL: char, BL: color)
-    call PrintStrVGA    - prints a string to the VGA screen    
+call PrintCharVGA   - prints a character on VGA display (DL: char, BL: color)
+call PrintStrVGA    - prints a string to the VGA screen    
 ```
 
 ### String Length
@@ -758,9 +758,9 @@ call Strlen
 
 ## Setting cursor position
 ```sh
-    push x
-    push y
-    call SetCursorPosition
+push x
+push y
+call SetCursorPosition
 ```
 
 
