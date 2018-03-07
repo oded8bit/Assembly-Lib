@@ -89,3 +89,84 @@ MACRO return code
   mov al, code
   int 21h
 ENDM
+;----------------------------------------------------------
+; Gets the memory address of the specific (row,col) element
+; in the 2d array of BYTES
+;
+; array2D[4][2] where 4 is the number of rows and 2 the 
+; number of columns.
+;
+; Equivalent to a C# 2d array:
+; byte[,] array2D = new byte[,] = {{1,2}, {3,4}, {5,6}, {7,8}}
+;
+; Input:
+;   reg     - the register that will hold the result. Cannot be DX
+;   address - offset of the 2d array (assuming ds segment)
+;   row,col - of the required cell
+;   rows_size - in the array
+;
+; Input cannot use AX or DX registers
+;----------------------------------------------------------
+MACRO getCellAddress2dArrayBytes reg, address, row, col, num_cols
+  push dx
+  mov ax, num_cols
+  mov dx, row
+  mul dx
+  add ax, col
+  add ax, address
+  mov reg, ax
+  pop dx
+ENDM
+;----------------------------------------------------------
+; Gets the memory address of the specific (row,col) element
+; in the 2d array of WORDS
+;----------------------------------------------------------
+MACRO getCellAddress2dArrayWords reg, address, row, col, num_cols
+  mov ax, num_cols
+  mov dx, row
+  mul dx
+  shl ax, 1       ; x2 for words
+  add ax, col*2
+  add ax, address
+  mov reg, ax
+ENDM
+;----------------------------------------------------------
+; Sets a byte value in the specific (row,col) element in the 
+; 2d array
+;----------------------------------------------------------
+MACRO setByteValue2dArray value, address, row, col, num_cols
+  push si
+  getCellAddress2dArrayBytes si, address, row, col, num_cols
+  mov [byte si], value
+  pop si
+ENDM
+;----------------------------------------------------------
+; Sets a word value in the specific (row,col) element in the 
+; 2d array
+;----------------------------------------------------------
+MACRO setWordValue2dArray value, address, row, col, num_cols
+  push si
+  getCellAddress2dArrayWords si, address, row, col, num_cols
+  mov [word si], value
+  pop si
+ENDM
+;----------------------------------------------------------
+; Gets a byte value in the specific (row,col) element in the 
+; 2d array
+;----------------------------------------------------------
+MACRO getByteValue2dArray address, row, col, num_cols
+  push si
+  getCellAddress2dArrayBytes si, address, row, col, num_cols
+  mov ax, [byte si]
+  pop si
+ENDM
+;----------------------------------------------------------
+; Gets a word value in the specific (row,col) element in the 
+; 2d array
+;----------------------------------------------------------
+MACRO getWordValue2dArray address, row, col, num_cols
+  push si
+  getCellAddress2dArrayWords si, address, row, col, num_cols
+  mov ax, [word si]
+  pop si
+ENDM

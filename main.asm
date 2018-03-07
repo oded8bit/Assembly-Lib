@@ -13,10 +13,9 @@ LOCALS @@
 .486
 IDEAL
 MODEL small
-	stack 256
+STACK 256
 
 DATASEG
-
 
 
 CODESEG
@@ -44,13 +43,14 @@ start:
   
     ;------ Tests
     ;call TestGetKey
-    call TestBmp
+    ;call TestBmp
     ;call TestShapes
     ;call TestSound
     ;call TestSavePalette
     ;call TestRandomAndPrint
     ;call TestPrint
     ;call TestMySprite
+    ;call Test2DArray
    
 exit:
     call WaitForKeypress 

@@ -25,6 +25,11 @@ DATASEG
     _keyPressedMsg          db      "Key was pressed","$"
 
     _paletteFile            db      "asset\\bmp.pal",0
+
+    _arrRows    equ     5
+    _arrCols    equ     3
+    _arr2d      dw      _arrCols*_arrRows dup(1)
+
 CODESEG
 
 ;///////////////////////////// BMP
@@ -190,3 +195,20 @@ PROC TestSavePalette
 
     ret
 ENDP TestSavePalette
+
+;///////////////////////////// 2D ARRAY
+PROC Test2DArray
+    mov cx, _arrCols*_arrRows    
+    mov si, offset _arr2d
+    xor dx,dx
+@@init:
+    mov [word si], dx
+    inc dx
+    add si,2
+    loop @@init    
+
+    mov bx, offset _arr2d
+    getCellAddress2dArrayWords si, bx, 2,1,  _arrCols
+    setWordValue2dArray 66, bx, 2,1, _arrCols
+    ret
+ENDP Test2DArray
