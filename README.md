@@ -321,6 +321,31 @@ or using MACROS:
 grm_FreeBmp  cx, ds
 ```
 
+### Saving and Loading Palettes
+The library provides methods for extracting color palettes of BMP files and storing them in a new file (binary) as well as load a palette file into 
+a buffer (possibly the palette of a BMP structure).
+
+Here is an example of saving a palette to a file:
+```sh
+mov dx, offset _bmp_file
+mov ax, offset _bmp
+grm_LoadBMPImage dx, [_dss], ax, [_dss]
+
+mov ax, offset _bmp
+mov bx, offset _paletteFile
+grm_SavePalette ax, [_dss], bx
+```
+
+and loading it to a buffer:
+```sh
+push offset _paletteFile
+push ds
+push offset _palette
+push ds
+call LoadPalette
+```
+
+
 # Sprites
 The library supports sprites, which is an image with multiple frames. Sprites are a great way to create animation or to hold multiple variants of an image.
 See an [example](asset/sprite1.bmp).
