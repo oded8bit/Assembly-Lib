@@ -12,7 +12,7 @@
 LOCALS @@
 
 DATASEG
-    _bmp_file               db      "asset\\b1.bmp",0
+    _bmp_file               db      "asset\\b.bmp",0
     _bmp                    db      BMP_STRUCT_SIZE dup(0)
 
     _sprite_w               equ     30
@@ -33,6 +33,23 @@ DATASEG
     _palette        db              2 ;400h dup(0)   
 
 CODESEG
+
+;-----------------------------------------------------------------
+; MAIN TEST FUNCTION
+;-----------------------------------------------------------------
+PROC TestMe
+    ;call TestGetKey
+    call TestBmp
+    ;call TestShapes
+    ;call TestSound
+    ;call TestSavePalette
+    ;call TestRandomAndPrint
+    ;call TestPrint
+    ;call TestMySprite
+    ;call Test2DArray
+    ;call TestFile
+
+ENDP TestMe
 
 ;///////////////////////////// BMP
 PROC TestBmp

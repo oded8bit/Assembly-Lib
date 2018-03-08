@@ -42,16 +42,7 @@ start:
     gr_set_color GR_COLOR_GREEN
   
     ;------ Tests
-    ;call TestGetKey
-    call TestBmp
-    ;call TestShapes
-    ;call TestSound
-    ;call TestSavePalette
-    ;call TestRandomAndPrint
-    ;call TestPrint
-    ;call TestMySprite
-    ;call Test2DArray
-    ;call TestFile
+    call TestMe
    
 exit:
     call WaitForKeypress 
