@@ -872,6 +872,12 @@ PROC LoadBMPData
     add si, BMP_DATA_SEG_OFFSET
     mov [word ds:si],ax
 
+    mov si,structAddress
+    add si, IMG_BMP_DATA_OFFSET
+    mov bx, [word ds:si]            ; where the data starts on file
+
+    grm_fseek SEEK_SET, 0, bx
+
     push ax
     pop es
     xor si,si               ; es:si - pointer to data start

@@ -12,7 +12,7 @@
 LOCALS @@
 
 DATASEG
-    _bmp_file               db      "asset\\b.bmp",0
+    _bmp_file               db      "asset\\b1.bmp",0
     _bmp                    db      BMP_STRUCT_SIZE dup(0)
 
     _sprite_w               equ     30
@@ -30,7 +30,7 @@ DATASEG
     _arrCols    equ     3
     _arr2d      dw      _arrCols*_arrRows dup(1)
 
-    _palette        db              2 ;400h dup(0)   
+    _palette        db              400h dup(0)   
 
 CODESEG
 
@@ -39,8 +39,8 @@ CODESEG
 ;-----------------------------------------------------------------
 PROC TestMe
     ;call TestGetKey
-    call TestBmp
     ;call TestShapes
+    call TestBmp
     ;call TestSound
     ;call TestSavePalette
     ;call TestRandomAndPrint
@@ -48,7 +48,7 @@ PROC TestMe
     ;call TestMySprite
     ;call Test2DArray
     ;call TestFile
-
+    ret
 ENDP TestMe
 
 ;///////////////////////////// BMP
@@ -65,10 +65,12 @@ PROC TestBmp
     call LoadBMPImage
 
     mov ax, offset _bmp
-    grm_DisplayBMP  ax, [_dss], 0, 10
+    grm_DisplayBMP  ax, [_dss], 0, 5
 
     mov ax, offset _bmp
     grm_FreeBmp ax, [_dss]
+
+@@end:    
     ret   
 ENDP TestBmp
 
