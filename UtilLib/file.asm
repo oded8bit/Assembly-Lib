@@ -12,6 +12,11 @@
 ;===================================================================================================
 LOCALS @@
 
+DATASEG
+    SEEK_SET        equ         0
+    SEEK_CUR        equ         1 
+    SEEK_END        equ         2
+
 CODESEG
     ; These vars are defined in CODESEG
     _fHandle     dw      0		; Handler
@@ -133,6 +138,7 @@ PROC fread
     store_sp_bp
     pusha	
     push ds
+    
     ; now the stack is
 	; bp+0 => old base pointer
 	; bp+2 => return address
@@ -140,17 +146,20 @@ PROC fread
 	; bp+6 => addr
     ; bp+8 => length
 	; saved registers        
+    
     mov dx, [WORD bp+6]    	    ; address
     push [WORD bp+4]            ; seg
     pop ds
     mov cx, [WORD bp+8]         ; length
 	mov bx,[cs:_fHandle]
-	mov ah,3Fh
+	mov ax,3F00h
 	int 21h
+
 	mov bl,0
 	jnc @@fread0
 	mov bl,al
 	sub ax,ax
+    
 @@fread0:	
     mov [cs:_fErr],bl
     pop ds
@@ -311,6 +320,59 @@ PROC fchangeAttr
 	ret 6
 ENDP fchangeAttr
 ;------------------------------------------------------------------------
+; Seek in file
+; 
+; Input:
+;     whence - SEEK_SET, SEEK_CUR, SEEK_END
+;     offset_high - high order of offset
+;     offset_low - low order of offset
+;
+;------------------------------------------------------------------------
+PROC fseek
+    store_sp_bp
+    pusha
+ 
+    ; now the stack is
+    ; bp+0 => old base pointer
+    ; bp+2 => return address
+    ; bp+4 => offset low
+    ; bp+6 => offset high
+    ; bp+8 => whence
+    ; saved registers
+ 
+    ;{
+    whence        equ        [word bp+8]
+    offsetHi      equ        [word bp+6]
+    offsetLow     equ        [word bp+4]
+    ;}
+
+    cmp [cs:_fHandle], 0
+    je @@end                ; file not open
+
+    mov ax, whence
+
+    cmp whence, SEEK_END
+    je @@s_end
+
+    mov cx, offsetHi
+    mov dx, offsetLow
+    jmp @@do_seek
+
+@@s_end:
+    xor cx, cx
+    xor dx, dx
+
+@@do_seek:
+    mov bx, [cs:_fHandle]
+    mov ah, 42h
+    int 21h
+
+@@end:
+    popa
+    restore_sp_bp
+    ret 6
+ENDP fseek
+;------------------------------------------------------------------------
 ; Gets the size of a file
 ; 
 ; Input:
@@ -464,4 +526,15 @@ ENDM
 MACRO utm_fwriteByte valueB
     push valueB
     call fwriteByte
+ENDM
+;----------------------------------------------------------------------
+; Seek file
+;
+; grm_fseek (whence, offset_high, offset_low)
+;----------------------------------------------------------------------
+MACRO grm_fseek whence, offset_high, offset_low
+    push whence
+    push offset_high
+    push offset_low
+    call fseek
 ENDM

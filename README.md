@@ -668,6 +668,23 @@ or using MACROS:
 ```sh
 utm_fchangeAttr attribute, address_of_file_name, segment_of_file_name
 ```
+### File Seek
+You can do a fseek in a file very similar to the C function
+```sh
+grm_fseek SEEK_SET, 0, 40
+```
+Or:
+```sh
+push SEEK_SET
+push 0
+push 40
+call fseek
+```
+The first parameter can be SEEK_CUR, SEEK_SET or SEEK_END. 
+The second parameter is the high order of the offset and the third is the low order.
+
+
+
 # Math 
 The library provide some basic math related functions and macros
 

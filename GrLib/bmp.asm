@@ -11,30 +11,60 @@
 ;===================================================================================================
 LOCALS @@
 
-    ;struct Bitmap {                          Bytes     Offset
-    ;    byte[54]    Header,                ; 54        0h
-    ;    byte[1024]  Pal,                   ; 1024      36h
-    ;    int         PalSize,               ; 2         436h 
-    ;    int         Height,                ; 2         438h
-    ;    int         Width,                 ; 2         43Ah
-    ;    int         _fHandle,               ; 2         43Ch
-    ;    int         DataStartAddress,      ; 2         43Eh
-    ;    int         DataSegment            ; 2         440h
-    ;    int         DataSize               ; 2         442h
-    ;}
-    ;BMP_STRUCT_SIZE         equ         444h
-    BMP_HEADER_OFFSET       equ         0
-    BMP_HEADER_LEN          equ         36h
-    BMP_PALETTE_OFFSET      equ         36h
-    BMP_PALETTE_LEN         equ         400h
-    BMP_PALETTE_SIZE_OFFSET equ         436h
-    BMP_HEIGHT_OFFSET       equ         438h
-    BMP_WIDTH_OFFSET        equ         43Ah
-    BMP_FHANDLE_OFFSET      equ         43Ch
-    BMP_DATA_SEG_OFFSET     equ         43Eh
-    BMP_DATA_SIZE_OFFSET    equ         440h   
+    BMP_MAX_PAL_SIZE        equ         400h        ; 1024
 
-    BMP_MAX_PAL_SIZE        equ         1024
+    ; short int of 2 bytes, int of 4 bytes, and long int of 8 bytes
+    
+    ; Bitmap Header (14 bytes)
+    ;typedef struct {
+        ;unsigned short int type;                 /* Magic identifier            */
+        ;unsigned int size;                       /* File size in bytes          */
+        ;unsigned short int reserved1, reserved2;
+        ;unsigned int offset;                     /* Offset to image data, bytes */
+    ;} HEADER;
+
+    ; Bitmap Info (40 bytes)
+    ;typedef struct {
+        ;unsigned int size;               /* Header size in bytes      */
+        ;int width,height;                /* Width and height of image */
+        ;unsigned short int planes;       /* Number of colour planes   */
+        ;unsigned short int bits;         /* Bits per pixel            */
+        ;unsigned int compression;        /* Compression type          */
+        ;unsigned int imagesize;          /* Image size in bytes       */
+        ;int xresolution,yresolution;     /* Pixels per meter          */
+        ;unsigned int ncolours;           /* Number of colours         */
+        ;unsigned int importantcolours;   /* Important colours         */
+    ;} INFOHEADER;
+
+    ; Offsets within the image on disk
+    IMG_BMP_HEADER_SIZE         equ         36h ; 40+14=54
+
+    IMG_BMP_FILE_SIZE_OFFSET    equ         2
+    IMG_BMP_DATA_OFFSET         equ         0Ah
+    IMG_BMP_WIDTH_OFFSET        equ         12h
+    IMG_BMP_HEIGHT_OFFSET       equ         16h
+
+    ;struct Bitmap {                          Bytes     Offset
+    ;    byte[40]    Header,                ; 40        0h
+    ;    byte[1024]  Pal,                   ; 1024      28h
+    ;    int         PalSize,               ; 2         428h 
+    ;    int         Height,                ; 2         42Ah
+    ;    int         Width,                 ; 2         42Ch
+    ;    int         _fHandle,              ; 2         42Eh
+    ;    int         DataSegment            ; 2         430h
+    ;    int         DataSize               ; 2         432h
+    ;}
+    ;BMP_STRUCT_SIZE         equ        444h
+    BMP_HEADER_OFFSET       equ         0
+    BMP_HEADER_LEN          equ         IMG_BMP_HEADER_SIZE
+    BMP_PALETTE_OFFSET      equ         IMG_BMP_HEADER_SIZE
+    BMP_PALETTE_LEN         equ         BMP_MAX_PAL_SIZE
+    BMP_PALETTE_SIZE_OFFSET equ         BMP_PALETTE_LEN + IMG_BMP_HEADER_SIZE
+    BMP_HEIGHT_OFFSET       equ         BMP_PALETTE_SIZE_OFFSET + 2
+    BMP_WIDTH_OFFSET        equ         BMP_HEIGHT_OFFSET + 2
+    BMP_FHANDLE_OFFSET      equ         BMP_WIDTH_OFFSET + 2
+    BMP_DATA_SEG_OFFSET     equ         BMP_FHANDLE_OFFSET + 2
+    BMP_DATA_SIZE_OFFSET    equ         BMP_DATA_SEG_OFFSET + 2   
 
 DATASEG   
     BMPStart        db  'BM'
@@ -506,28 +536,29 @@ PROC GetBMPInfoStruct
     push structSeg
     pop es                          ; header seg   (es:si)
 
-    mov ax, [word es:si+0aH]
+    mov ax, [word es:si+IMG_BMP_DATA_OFFSET]
     sub ax,BMP_HEADER_LEN           ; Subtract the length of the header
     shr ax,2                        ; and divide by 4
     
     mov bx, structAddr
     add bx, BMP_PALETTE_SIZE_OFFSET
     mov [es:bx],ax                  ; to get the number of colors in the BMP
-                                    ; (Eachpalette entry is 4 bytes long).
-                                    ;mov ax,header[12h] ; AX = Horizontal resolution (width) of BMP.
+                                    ; (Each palette entry is 4 bytes long).
+                                    ; mov ax,header[12h] ; AX = Horizontal resolution (width) of BMP.
 
-    mov ax, [word es:si+12h]
+    mov ax, [word es:si+IMG_BMP_WIDTH_OFFSET]
     mov bx, structAddr
     add bx, BMP_WIDTH_OFFSET
     mov [es:bx],ax                  ; Store it.
                                     ;mov ax,header[16h] ; AX = Vertical resolution (height) of BMP.
-    mov dx, [word es:si+16h]
+    mov dx, [word es:si+IMG_BMP_HEIGHT_OFFSET]
     mov bx, structAddr
     add bx, BMP_HEIGHT_OFFSET
     mov [es:bx],dx                  ; Store it.
 
     ; ax = width
     ; dx = height
+    add ax, 15
     shr ax,4                        ; ax / 16 (# of mem paragraphs)
     mul dx                          ; w * h
     mov bx, structAddr
@@ -827,17 +858,14 @@ PROC LoadBMPData
     mov dx, [ds:si]             ; width
     mov varWidth, dx
 
-    push dx
     ; allocate memory  
-    mov ax, dx
-    mul cx                      ; width * height
-    add ax, 15                  ; make sure it falls into a paragraph
-    shr ax, 4                   ; divide by 16 for the number of mem paragraphs
+    mov si,structAddress
+    add si, BMP_DATA_SIZE_OFFSET
+    mov ax, [ds:si]
+
     push ax
     call malloc
     jc @@end
-
-    pop dx
 
     ; store pointer to data
     mov si,structAddress

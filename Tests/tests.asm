@@ -12,7 +12,7 @@
 LOCALS @@
 
 DATASEG
-    _bmp_file               db      "asset\\b.bmp",0
+    _bmp_file               db      "asset\\b1.bmp",0
     _bmp                    db      BMP_STRUCT_SIZE dup(0)
 
     _sprite_w               equ     30
@@ -30,7 +30,7 @@ DATASEG
     _arrCols    equ     3
     _arr2d      dw      _arrCols*_arrRows dup(1)
 
-    _palette        db              400h dup(0)
+    _palette        db              2 ;400h dup(0)   
 
 CODESEG
 
@@ -39,15 +39,20 @@ PROC TestBmp
 
     mov dx, offset _bmp_file
     mov ax, offset _bmp
-    grm_LoadBMPImage dx, [_dss], ax, [_dss]
+    ;grm_LoadBMPImage dx, [_dss], ax, [_dss]
+
+    push dx
+    push ds
+    push ax
+    push ds
+    call LoadBMPImage
 
     mov ax, offset _bmp
     grm_DisplayBMP  ax, [_dss], 0, 10
 
     mov ax, offset _bmp
     grm_FreeBmp ax, [_dss]
-
-    ret
+    ret   
 ENDP TestBmp
 
 ;///////////////////////////// SPRITES
@@ -205,7 +210,7 @@ ENDP TestSavePalette
 
 ;///////////////////////////// 2D ARRAY
 PROC Test2DArray
-    mov cx, _arrCols*_arrRows    
+    mov cx,_arrCols*_arrRows       ; 400h
     mov si, offset _arr2d
     xor dx,dx
 @@init:
@@ -225,5 +230,12 @@ PROC TestFile
     mov bx, offset _sprite_file
 
     utm_fsize bx, ds
+
+    utm_fopen bx, ds
+    
+    mov cx, offset _palette
+    utm_fread 50, cx, ds
+
+    utm_fclose
     ret
 ENDP TestFile

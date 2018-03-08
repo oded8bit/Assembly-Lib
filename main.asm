@@ -43,7 +43,7 @@ start:
   
     ;------ Tests
     ;call TestGetKey
-    ;call TestBmp
+    call TestBmp
     ;call TestShapes
     ;call TestSound
     ;call TestSavePalette
