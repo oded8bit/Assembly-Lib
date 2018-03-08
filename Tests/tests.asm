@@ -30,7 +30,7 @@ DATASEG
     _arrCols    equ     3
     _arr2d      dw      _arrCols*_arrRows dup(1)
 
-    _palette        db              400h dup(0)   
+    ;_palette        db              400h dup(0)   
 
 CODESEG
 
@@ -211,19 +211,19 @@ ENDP TestGetKey
 
 ;///////////////////////////// SAVE PALETTE
 PROC TestSavePalette
-    mov dx, offset _bmp_file
-    mov ax, offset _bmp
-    grm_LoadBMPImage dx, [_dss], ax, [_dss]
+    ;mov dx, offset _bmp_file
+    ;mov ax, offset _bmp
+    ;grm_LoadBMPImage dx, [_dss], ax, [_dss]
 
-    mov ax, offset _bmp
-    mov bx, offset _paletteFile
-    grm_SavePalette ax, [_dss], bx
+    ;mov ax, offset _bmp
+    ;mov bx, offset _paletteFile
+    ;grm_SavePalette ax, [_dss], bx
 
-    push offset _paletteFile
-    push ds
-    push offset _palette
-    push ds
-    call LoadPalette
+    ;push offset _paletteFile
+    ;push ds
+    ;push offset _palette
+    ;push ds
+    ;call LoadPalette
     ret
 ENDP TestSavePalette
 
@@ -252,8 +252,8 @@ PROC TestFile
 
     utm_fopen bx, ds
     
-    mov cx, offset _palette
-    utm_fread 50, cx, ds
+    ;mov cx, offset _palette
+    ;utm_fread 50, cx, ds
 
     utm_fclose
     ret
