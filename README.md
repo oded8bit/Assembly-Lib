@@ -683,7 +683,13 @@ call fseek
 The first parameter can be SEEK_CUR, SEEK_SET or SEEK_END. 
 The second parameter is the high order of the offset and the third is the low order.
 
-
+# Directory Services
+The library provides a few directory services, including:
+```sh
+mkdir OR utm_mkdir   - create a directory
+rmdir OR utm_rmdir   - delete a directory
+chdir OR utm_chdir   - change a directory
+```
 
 # Math 
 The library provide some basic math related functions and macros

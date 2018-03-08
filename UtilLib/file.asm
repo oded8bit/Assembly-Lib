@@ -431,7 +431,132 @@ PROC fsize
     restore_sp_bp
     ret 4
 ENDP fsize
+;------------------------------------------------------------------------
+; Create folder
+; 
+; Input:
+;     push folder path address 
+;     push folder path segment
+;     call mkdir
+; 
+; Output:
+;   CF = 0 if successful
+;	   = 1 if error
+;	AX = error code
+; 
+; mkdir( path, seg )
+;------------------------------------------------------------------------
+PROC mkdir
+    store_sp_bp
+    push ds
+ 
+    ; now the stack is
+    ; bp+0 => old base pointer
+    ; bp+2 => return address
+    ; bp+4 => folder path seg
+    ; bp+6 => folder path address
+    ; saved registers
+ 
+    ;{
+    pathSegment_        equ        [word bp+4]
+    pathAddress_        equ        [word bp+6]
+    ;}
+    
+    mov ah, 39h
+    push pathSegment_
+    pop ds
+    mov dx, pathAddress_
+    int 21h
 
+@@end:
+    pop ds 
+    restore_sp_bp
+    ret 4
+ENDP mkdir
+;------------------------------------------------------------------------
+; Delete folder
+; 
+; Input:
+;     push folder path address 
+;     push folder path segment
+;     call rmdir
+; 
+; Output:
+;   CF = 0 if successful
+;	   = 1 if error
+;	AX = error code
+; 
+; rmdir( path, seg )
+;------------------------------------------------------------------------
+PROC rmdir
+    store_sp_bp
+    push ds
+ 
+    ; now the stack is
+    ; bp+0 => old base pointer
+    ; bp+2 => return address
+    ; bp+4 => folder path seg
+    ; bp+6 => folder path address
+    ; saved registers
+ 
+    ;{
+    pathSegment_        equ        [word bp+4]
+    pathAddress_        equ        [word bp+6]
+    ;}
+    
+    mov ah, 3Ah
+    push pathSegment_
+    pop ds
+    mov dx, pathAddress_
+    int 21h
+
+@@end:
+    pop ds 
+    restore_sp_bp
+    ret 4
+ENDP rmdir
+;------------------------------------------------------------------------
+; Delete folder
+; 
+; Input:
+;     push folder path address 
+;     push folder path segment
+;     call rmdir
+; 
+; Output:
+;   CF = 0 if successful
+;	   = 1 if error
+;	AX = error code
+; 
+; chdir( path, seg )
+;------------------------------------------------------------------------
+PROC chdir
+    store_sp_bp
+    push ds
+ 
+    ; now the stack is
+    ; bp+0 => old base pointer
+    ; bp+2 => return address
+    ; bp+4 => folder path seg
+    ; bp+6 => folder path address
+    ; saved registers
+ 
+    ;{
+    pathSegment_        equ        [word bp+4]
+    pathAddress_        equ        [word bp+6]
+    ;}
+    
+    mov ah, 3Bh
+    push pathSegment_
+    pop ds
+    mov dx, pathAddress_
+    int 21h
+
+@@end:
+    pop ds 
+    restore_sp_bp
+    ret 4
+ENDP chdir
 
 ;////////////////////////////////////////////////////////////////////////////
 ; FUNCTION LIKE MACROS
@@ -537,4 +662,34 @@ MACRO grm_fseek whence, offset_high, offset_low
     push offset_high
     push offset_low
     call fseek
+ENDM
+;----------------------------------------------------------------------
+; Create folder
+;
+; utm_mkdir (pathOffset, pathSegment)
+;----------------------------------------------------------------------
+MACRO utm_mkdir pathOffset, pathSegment
+    push pathOffset
+    push pathSegment
+    call mkdir
+ENDM
+;----------------------------------------------------------------------
+; Remove folder
+;
+; utm_rmdir (pathOffset, pathSegment)
+;----------------------------------------------------------------------
+MACRO utm_rmdir pathOffset, pathSegment
+    push pathOffset
+    push pathSegment
+    call rmdir
+ENDM
+;----------------------------------------------------------------------
+; Change folder
+;
+; utm_chdir (pathOffset, pathSegment)
+;----------------------------------------------------------------------
+MACRO utm_chdir pathOffset, pathSegment
+    push pathOffset
+    push pathSegment
+    call chdir
 ENDM
