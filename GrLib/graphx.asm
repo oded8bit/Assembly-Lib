@@ -157,19 +157,13 @@ ENDM
 ;   di = offset in video memory
 ;----------------------------------------------------------
 MACRO translate_coord_to_vga_addr x, y
-    push ax
-    push bx
-    push cx
-    push dx
+    push ax bx cx dx
     mov bx, [word y]
     mov ax, VGA_SCREEN_WIDTH    ; width
     mul bx                      ; ax = y * width
     add ax, [word x]            ; ax = (y * width) + x
     mov di, ax                  ; return value
-    pop dx
-    pop cx
-    pop bx
-    pop ax
+    pop dx cx bx ax
 ENDM
 ;----------------------------------------------------------
 ; Translate (x,y) coordinates to the video memory address
@@ -177,19 +171,13 @@ ENDM
 ;   di = offset in video memory
 ;----------------------------------------------------------
 MACRO translate_coord_to_vga_addr_values x, y
-    push ax
-    push bx
-    push cx
-    push dx
+    push ax bx cx dx
     mov bx, y
     mov ax, VGA_SCREEN_WIDTH    ; width
     mul bx                      ; ax = y * width
     add ax, x                   ; ax = (y * width) + x
     mov di, ax                  ; return value
-    pop dx
-    pop cx
-    pop bx
-    pop ax
+    pop dx cx bx ax
 ENDM
 ;----------------------------------------------------------
 ; Translate (x,y) coordinates to a memory address
@@ -202,18 +190,14 @@ ENDM
 ;   si = offset 
 ;----------------------------------------------------------
 MACRO translate_coord_to_buf_addr addr, x, y, width
-    push ax
-    push bx
-    push cx
+    push ax bx cx
     mov bx, [word y]            ; y
     mov ax, [word width]        ; width
     mul bx                      ; ax = y * width
     add ax, [word x]            ; ax = (y * width) + x
     mov si, ax                  ; return value
     add si,[word addr]          ; start address of buffer
-    pop cx
-    pop bx
-    pop ax
+    pop cx bx ax
 ENDM
 ;----------------------------------------------------------
 ; Sets a pixel using the BIOS int10h API 
@@ -231,11 +215,7 @@ ENDM
 ;----------------------------------------------------------
 MACRO gr_set_pixel x, y, color
   local _NotDbl, _out
-  push ax
-  push bx
-  push dx
-  push di
-  push es
+  push ax bx dx di es
 
   IsDblBuffering _NotDbl
   GetDblBufferSeg es
@@ -250,11 +230,7 @@ _NotDbl:
   mov [es:di], al
 
 _out:  
-  pop es
-  pop di
-  pop dx
-  pop bx
-  pop ax
+  pop es di dx bx ax
 ENDM
 ;----------------------------------------------------------
 ; Sets a pixel using Video Memory 
