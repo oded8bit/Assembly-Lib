@@ -12,12 +12,19 @@
 LOCALS @@
 
 DATASEG
-  _Key	            db 0,0,0			;keyscan (word),_Key code(call keys)
+    include   "UtilLib\keymap.inc"
 
-  include   "UtilLib\keymap.inc"
+    strTail           db  "TAIL=$",0
+    strHead           db  "HEAD=$",0
+    strHere           db   "Here$",0
 
 CODESEG
-  _OldKeyboardISR 	    dw 0,0			;old keyboard ISR vector adress
+  _OldKeyboardISR 	  dw            0,0			                    ; old keyboard ISR vector address and segment
+  KEY_BUFFER_SIZE     equ           15
+  _ISRKeyBuffer       db            KEY_BUFFER_SIZE dup(0)			; ISR 9 - keyboard buffer
+  _ISRKeyHead         dw            0  
+  _ISRKeyTail         dw            0  
+  _ISRKeyCount        db            0
 
 ;------------------------------------------------------------------
 ; Set Keyboard Typematic Rate to defalt (repeat delay and rate)
@@ -110,6 +117,7 @@ ENDP GetKeyboardFlags
 ; Install a keyboard interrupt
 ;
 ; push address of new interrupt in ds (lea dx,[interr])
+; push interrupt segment
 ; call InstallKeyboardInterrupt
 ;   
 ; Note:
@@ -117,7 +125,9 @@ ENDP GetKeyboardFlags
 ;   RestoreKeyboardInterrupt
 ;------------------------------------------------------------------
 PROC InstallKeyboardInterrupt
+    store_sp_bp
     pusha
+    push ds es
     cli
     mov al,9h		
     mov ah,35h
@@ -126,11 +136,15 @@ PROC InstallKeyboardInterrupt
     mov [_OldKeyboardISR+2],es
     mov al,9h
     mov ah,25h
-    mov dx,[bp+4]           ; arg
+    mov dx,[ss:bp+6]           ; int address
+    push [WORD ss:bp+4]
+    pop ds                  ; int segment
     int 21h                 ; install new
     sti
+    pop es ds
     popa
-    ret 2
+    restore_sp_bp
+    ret 4
 ENDP InstallKeyboardInterrupt
 ;------------------------------------------------------------------
 ; Restore a previously saved keyboard interrupt
@@ -139,8 +153,8 @@ PROC RestoreKeyboardInterrupt
     pusha
     cli
     push ds			            ;uninstall keyboard int
-    mov dx,[_OldKeyboardISR]
-    mov ax,[_OldKeyboardISR+2]
+    mov dx,[cs:_OldKeyboardISR]
+    mov ax,[cs:_OldKeyboardISR+2]
     mov ds,ax
     mov al,9h
     mov ah,25h
@@ -150,28 +164,229 @@ PROC RestoreKeyboardInterrupt
     popa
     ret
 ENDP RestoreKeyboardInterrupt
+
+;--------------============= SAMPLE KEYBOARD ISR ==============-----------------
+
 ;------------------------------------------------------------------
-; Sample keybaord interrupt
+; Sample keybaord interrupt - Init FIFO buffer
 ;------------------------------------------------------------------
-PROC KeyboardSampleISR 
-    push ax bx
+PROC InitSampleISR
+    push es di
+    mov [cs:_ISRKeyCount], 0
+    mov [cs:_ISRKeyHead], 0
+    mov [cs:_ISRKeyTail], 0
+    ; Make buffer zero
+    mov cx, KEY_BUFFER_SIZE
+    mov di, offset _ISRKeyBuffer
+    push cs
+    pop es
+    mov al, 0
+    rep stosb
+
+    pop di es
+    ret
+ENDP
+;------------------------------------------------------------------
+; Sample keybaord interrupt - read key from buffer
+; Returns:
+;
+;   AL = scan code, 0 if buffer empty
+;------------------------------------------------------------------
+PROC getcISR
+    store_sp_bp
+    push di si
+
+    ;mov al, [cs:_key]
+    ;mov [cs:_key],0
+    ;jmp @@end
+
+    mov si, [cs:_ISRKeyHead]
+    mov di, [cs:_ISRKeyTail]
+    xor ax, ax
+    ; if (head == tail) then no_data
+    cmp si, di
+    je @@noData
+
+    mov si, offset _ISRKeyBuffer
+    add si,[cs:_ISRKeyTail] 
+    mov al, [BYTE cs:si]                  ; al <= key
+    inc [cs:_ISRKeyTail]               ; tail++
+    cmp [cs:_ISRKeyTail], KEY_BUFFER_SIZE
+    jne @@end
+
+    mov [cs:_ISRKeyTail], 0            ; tail = 0
+
+@@noData:
+
+@@end:
+    pop si di
+    restore_sp_bp
+    ret
+ENDP getcISR
+;------------------------------------------------------------------
+; Sample keybaord interrupt - check if there is a key in buffer
+; without taking it out.
+;
+; Private - for use only by the library
+;
+; Returns:
+;   AL = 0 if no scan code is available, scancode otherwise
+;------------------------------------------------------------------
+MACRO __fifo_peek
+local _noData
+    push di si
+    mov si, [cs:_ISRKeyHead]
+    mov di, [cs:_ISRKeyTail]
+    xor ax, ax
+    ; if (head == tail) then no_data
+    cmp si, di
+    je _noData
+
+    mov si, offset _ISRKeyBuffer
+    add si, [cs:_ISRKeyTail]
+    mov al, [BYTE cs:si]           ; al <= key
+_noData:
+    pop si di
+ENDM
+;------------------------------------------------------------------
+; Sample keybaord interrupt - check if there is a key in buffer
+; without taking it out.
+;
+; Returns:
+;   AL = 0 if no scan code is available, scancode otherwise
+;------------------------------------------------------------------
+PROC GetKeyboardStatusISR
+    __fifo_peek
+    ret
+ENDP GetKeyboardStatusISR
+
+;------------------------------------------------------------------
+; Sample keybaord interrupt - converts scancode to ASCII
+; Not implemented!
+;
+; Private - for use only by the library
+;------------------------------------------------------------------
+MACRO __scancode_to_char key
+ENDM
+;------------------------------------------------------------------
+; Sample keybaord interrupt - write key to buffer
+;
+; Private - for use only by the library
+;------------------------------------------------------------------
+MACRO __fifo_write key
+local _bufFull, _end, _insert
+    push si di ax
+    mov si, [cs:_ISRKeyHead]
+    mov di, [cs:_ISRKeyTail]
+    xor ah, ah
+    inc si                  ; head + 1
+   
+    ;if( (head + 1 == tail) || ((head + 1 == size) && (tail == 0) ){
+        ; buffer is full        
+        cmp si, di
+        je _bufFull
+
+        cmp si, KEY_BUFFER_SIZE
+        jne _insert
+        cmp di,0
+        jne _insert
+
+        jmp _bufFull
+
+    ;} else {
+_insert:
+        ; insert key to buffer
+        mov si, offset _ISRKeyBuffer
+        add si, [cs:_ISRKeyHead]
+        mov [cs:si], key          
+        inc [cs:_ISRKeyHead]               ; head++
+        ; if( head != size ) { 
+            ; we are good
+            cmp [cs:_ISRKeyHead], KEY_BUFFER_SIZE 
+            jne _end
+        ; } else {
+            mov [cs:_ISRKeyHead], 0            ; head = 0
+        ;}
+
+        jmp _end
+    ;}
+_bufFull:
+    ; Make sound if buffer is full
+    utm_Beep 0122h
+    utm_DelayMS 0, 0c350h
+    utm_StopBeep
+_end:
+    pop ax di si
+ENDM
+;------------------------------------------------------------------
+; A simple keybaord interrupt that manages a FIFO buffer.
+; The buffer holds scancodes (and not ASCII characters) and 
+; does not handle shoft / ctrl and alt combinations
+;------------------------------------------------------------------
+PROC KeyboardSampleISR FAR
+    cli                     ; disable interrupts
+    push ax 
     xor   ax,ax
-    in    al, 060h       ; read scan code 
-    mov [_Key],al
 
-    ; send EOI to XT keyboard
-    in      al, 061h
-    mov     ah, al
-    or      al, 080h
-    out     061h, al
-    mov     al, ah
-    out     061h, al
+    in      al, 060h        ; read scan code 
 
-    ; send EOI to master PIC
-    mov   al, 020h       ; reset PIC 
-    out   020h, al
+    cmp al, 80h
+    ja @@keyReleased
 
-    pop bx ax 
+    ; Handle key presse events
+    __fifo_write al         ; save it in buffer
+
+    jmp @@end
+@@keyReleased:
+    ; Handle key release events
+
+@@end:
+     ; End of Interrupt
+    push ax
+    mov al,20h
+    out 20h,al
+    pop ax
+
+    pop ax 
+    sti                     ; enable interrupts
     iret
 ENDP KeyboardSampleISR         
+;------------------------------------------------------------------
+; For debug only: prints fifo buffer status message
+;------------------------------------------------------------------
+PROC PrintFifoStatus
+    store_sp_bp
+    pusha
 
+    mov dx, offset strHead
+    call PrintStr
+    mov ax, [cs:_ISRKeyHead]
+    push ax
+    call PrintHexByte
+    call PrintNewLine
+
+    mov dx, offset strTail
+    call PrintStr
+    mov ax,[cs:_ISRKeyTail]
+    push ax
+    call PrintHexByte
+    call PrintNewLine
+
+    mov cx, KEY_BUFFER_SIZE
+    mov si, offset _ISRKeyBuffer
+@@printBuf:
+    mov ax, [WORD cs:si]
+    push ax
+    call PrintHexByte
+    call PrintSpace
+    inc si
+    loop @@printBuf    
+    call PrintNewLine
+    call PrintNewLine
+
+    popa
+    restore_sp_bp
+    ret
+ENDP PrintFifoStatus
+
+;--------------============= END OF SAMPLE KEYBOARD ISR ==============-----------------

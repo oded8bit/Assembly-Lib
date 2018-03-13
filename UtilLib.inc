@@ -13,14 +13,15 @@
 ; Common definitions
 TRUE        equ     1
 FALSE       equ     0
+NULL        equ     0
 
 ; Includes
 include "UtilLib\util.asm"
 include "UtilLib\math.asm"
 include "UtilLib\file.asm"
-include "UtilLib\keys.asm"
-include "UtilLib\mouse.asm"
-include "UtilLib\mem.asm"
 include "UtilLib\print.asm"
 include "UtilLib\sound.asm"
 include "UtilLib\time.asm"
+include "UtilLib\keys.asm"
+include "UtilLib\mouse.asm"
+include "UtilLib\mem.asm"

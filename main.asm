@@ -30,7 +30,7 @@ start:
 	mov ax, @data
 	mov ds,ax
 
-    mov ax, TRUE
+    mov ax, FALSE
     ut_init_lib ax
 
     ; -- DOUBLE BUFFERING

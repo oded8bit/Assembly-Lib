@@ -13,7 +13,6 @@ LOCALS @@
 
 DATASEG
   _dss         dw    0        ; Saved DS segment
-
 CODESEG
 ;------------------------------------------------------------------------
 ; Initialization - call at the beginning of your program

@@ -11,7 +11,9 @@
 ;===================================================================================================
 LOCALS @@
 
-
+DATASEG
+    _Hex    db  '0123456789ABCDEF'
+CODESEG
 ;----------------------------------------------------------
 ; Prints a char to the screen
 ; Input: DL
@@ -317,6 +319,56 @@ pop_next:
 	   
 	   ret
 endp PrintDecimal
+
+
+PROC _Print4LSBHex
+    store_sp_bp
+    push ax bx dx
+    mov ax, [word bp+4]         ; value
+    xor ah,ah
+	; mask received value without changing ax
+	; leaving only 4 LSB
+    mov dx, ax
+	and dx, 000fh
+	; get index into 'hex' array
+	mov bx, offset _Hex
+	add bx, dx
+	
+	; print char to STDOUT
+	mov ah, 02h
+	mov dl, [bx]
+	int 21h
+
+    pop dx bx ax
+    restore_sp_bp
+    ret 2
+ENDP _Print4LSBHex
+
+;----------------------------------------------------------
+; Print byte as HEX
+;
+; push value
+; call SetCursorPosition
+;----------------------------------------------------------
+PROC PrintHexByte
+    store_sp_bp
+    push ax
+
+    mov ax, [word bp+4]
+    push ax                 ; save for next char
+	shr ax, 4
+    push ax
+	call _Print4LSBHex
+	
+    pop ax                  ; restore it
+    push ax
+	call _Print4LSBHex
+	
+    pop ax
+    restore_sp_bp
+    ret 2
+ENDP PrintHexByte
+
 
 ;////////////////////////////////////////////////////////////////////////////
 ; FUNCTION LIKE MACROS

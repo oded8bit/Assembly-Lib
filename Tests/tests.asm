@@ -40,14 +40,15 @@ CODESEG
 PROC TestMe
     ;call TestGetKey
     ;call TestShapes
-    call TestBmp
+    ;call TestBmp
     ;call TestSound
     ;call TestSavePalette
     ;call TestRandomAndPrint
     ;call TestPrint
-    ;call TestMySprite
+    call TestMySprite
     ;call Test2DArray
     ;call TestFile
+    ;call TestKeyboardISR
     ret
 ENDP TestMe
 
@@ -258,3 +259,48 @@ PROC TestFile
     utm_fclose
     ret
 ENDP TestFile
+
+;///////////////////////////// KEYBOARD ISR
+PROC TestKeyboardISR
+    call InitSampleISR
+
+    ;call PrintFifoStatus
+    lea  dx, [cs:KeyboardSampleISR]
+    mov dx, offset KeyboardSampleISR
+    push dx
+    push cs
+    call InstallKeyboardInterrupt
+
+    mov cx, 100
+
+@@top:
+    call getcISR
+    
+    cmp al,0
+    jne @@key
+
+    jmp @@next
+@@key:    
+    cmp al, 16          ; q
+    je @@end
+
+    
+    mov dl, al
+    call PrintChar
+    ;call PrintDecimal
+    mov dl,','
+    call PrintChar
+
+@@next:
+    ;dec cx
+    cmp cx, 0
+    je @@end
+
+    jmp @@top
+
+@@end:
+    mov dl,'q'
+    call PrintChar
+    call RestoreKeyboardInterrupt
+    ret
+ENDP TestKeyboardISR
