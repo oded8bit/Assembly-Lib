@@ -14,17 +14,17 @@ LOCALS @@
 DATASEG
     include   "UtilLib\keymap.inc"
 
+    ; used by PrintFifoStatus
     strTail           db  "TAIL=$",0
     strHead           db  "HEAD=$",0
-    strHere           db   "Here$",0
 
 CODESEG
   _OldKeyboardISR 	  dw            0,0			                    ; old keyboard ISR vector address and segment
-  KEY_BUFFER_SIZE     equ           15
+  ; FIFO buffer implementation
+  KEY_BUFFER_SIZE     equ           15                              ; Fifo buffer size
   _ISRKeyBuffer       db            KEY_BUFFER_SIZE dup(0)			; ISR 9 - keyboard buffer
-  _ISRKeyHead         dw            0  
-  _ISRKeyTail         dw            0  
-  _ISRKeyCount        db            0
+  _ISRKeyHead         dw            0                               ; Head pointer
+  _ISRKeyTail         dw            0                               ; Tail pointer
 
 ;------------------------------------------------------------------
 ; Set Keyboard Typematic Rate to defalt (repeat delay and rate)
@@ -176,7 +176,6 @@ ENDP RestoreKeyboardInterrupt
 ;------------------------------------------------------------------
 PROC InitSampleISR
     push es di
-    mov [cs:_ISRKeyCount], 0
     mov [cs:_ISRKeyHead], 0
     mov [cs:_ISRKeyTail], 0
     ; Make buffer zero
@@ -263,15 +262,6 @@ PROC GetKeyboardStatusISR
     __fifo_peek
     ret
 ENDP GetKeyboardStatusISR
-
-;------------------------------------------------------------------
-; Sample keybaord interrupt - converts scancode to ASCII
-; Not implemented!
-;
-; Private - for use only by the library
-;------------------------------------------------------------------
-MACRO __scancode_to_char key
-ENDM
 ;------------------------------------------------------------------
 ; Sample keybaord interrupt - write key to buffer
 ;
@@ -400,6 +390,8 @@ ENDP PrintFifoStatus
 ;--------------============= END OF SAMPLE KEYBOARD ISR ==============-----------------
 
 
+;--------------============= SIMPLE KEYBOARD ISR ==============------------------------
+
 ;------------------------------------------------------------------
 ; A simple keybaord interrupt uses the original built-in IRQ but
 ; adds preprocessing to the event
@@ -413,3 +405,4 @@ PROC KeyboardISREvents FAR
     push [word ptr cs:_OldKeyboardISR]     ; offset
     retf
 ENDP KeyboardISREvents       
+;--------------============= END OF SIMPLE KEYBOARD ISR ==============-------------------
