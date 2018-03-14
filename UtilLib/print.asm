@@ -368,7 +368,30 @@ PROC PrintHexByte
     restore_sp_bp
     ret 2
 ENDP PrintHexByte
+;----------------------------------------------------------
+; Print word as HEX
+;
+; push value
+; call SetCursorPosition
+;----------------------------------------------------------
+PROC PrintHexWord
+    store_sp_bp
+    push ax
 
+    mov ax, [word bp+4]
+    push ax                 ; save for next char
+	shr ax, 8
+    push ax
+	call PrintHexByte
+	
+    pop ax                  ; restore it
+    push ax
+	call PrintHexByte
+	
+    pop ax
+    restore_sp_bp
+    ret 2
+ENDP PrintHexWord
 
 ;////////////////////////////////////////////////////////////////////////////
 ; FUNCTION LIKE MACROS

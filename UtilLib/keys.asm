@@ -90,7 +90,7 @@ PROC GetKeyboardKey
     mov ax,0
     call GetKeyboardStatus
     jnz @@exit
-    ;call ConsumeKey
+    call ConsumeKey
 @@exit:    
     ret
 ENDP GetKeyboardKey
@@ -129,17 +129,21 @@ PROC InstallKeyboardInterrupt
     pusha
     push ds es
     cli
+    ; save old ISR
     mov al,9h		
     mov ah,35h
     int 21h                 ; get current
-    mov [_OldKeyboardISR],bx    ; save it
-    mov [_OldKeyboardISR+2],es
+    mov [cs:_OldKeyboardISR],bx    ; save it
+    mov [cs:_OldKeyboardISR+2],es
+
+    ; Install new ISR
     mov al,9h
     mov ah,25h
-    mov dx,[ss:bp+6]           ; int address
+    mov dx,[ss:bp+6]           ; ISR address
     push [WORD ss:bp+4]
-    pop ds                  ; int segment
+    pop ds                  ; ISR segment
     int 21h                 ; install new
+
     sti
     pop es ds
     popa
@@ -154,8 +158,8 @@ PROC RestoreKeyboardInterrupt
     cli
     push ds			            ;uninstall keyboard int
     mov dx,[cs:_OldKeyboardISR]
-    mov ax,[cs:_OldKeyboardISR+2]
-    mov ds,ax
+    push [cs:_OldKeyboardISR+2]
+    pop ds
     mov al,9h
     mov ah,25h
     int 21h
@@ -328,6 +332,10 @@ PROC KeyboardSampleISR FAR
     push ax 
     xor   ax,ax
 
+    in al, 64h              ; Read keyboard status port
+    cmp al, 10b
+    je @@end                ; not input
+
     in      al, 060h        ; read scan code 
 
     cmp al, 80h
@@ -341,7 +349,7 @@ PROC KeyboardSampleISR FAR
     ; Handle key release events
 
 @@end:
-     ; End of Interrupt
+    ; Send End-Of-Interrupt signal to the 8259 Interrupt Controller
     push ax
     mov al,20h
     out 20h,al
@@ -390,3 +398,18 @@ PROC PrintFifoStatus
 ENDP PrintFifoStatus
 
 ;--------------============= END OF SAMPLE KEYBOARD ISR ==============-----------------
+
+
+;------------------------------------------------------------------
+; A simple keybaord interrupt uses the original built-in IRQ but
+; adds preprocessing to the event
+;------------------------------------------------------------------
+PROC KeyboardISREvents FAR
+
+    ; handle the event
+
+    ; call original ISR
+    push [word ptr cs:_OldKeyboardISR + 2] ; segment
+    push [word ptr cs:_OldKeyboardISR]     ; offset
+    retf
+ENDP KeyboardISREvents       

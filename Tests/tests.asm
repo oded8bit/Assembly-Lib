@@ -33,7 +33,6 @@ DATASEG
     ;_palette        db              400h dup(0)   
 
 CODESEG
-
 ;-----------------------------------------------------------------
 ; MAIN TEST FUNCTION
 ;-----------------------------------------------------------------
@@ -45,10 +44,11 @@ PROC TestMe
     ;call TestSavePalette
     ;call TestRandomAndPrint
     ;call TestPrint
-    call TestMySprite
+    ;call TestMySprite
     ;call Test2DArray
     ;call TestFile
     ;call TestKeyboardISR
+    call TestSimpleISR
     ret
 ENDP TestMe
 
@@ -266,7 +266,6 @@ PROC TestKeyboardISR
 
     ;call PrintFifoStatus
     lea  dx, [cs:KeyboardSampleISR]
-    mov dx, offset KeyboardSampleISR
     push dx
     push cs
     call InstallKeyboardInterrupt
@@ -281,7 +280,7 @@ PROC TestKeyboardISR
 
     jmp @@next
 @@key:    
-    cmp al, 16          ; q
+    cmp al, 30          ; q
     je @@end
 
     
@@ -292,10 +291,6 @@ PROC TestKeyboardISR
     call PrintChar
 
 @@next:
-    ;dec cx
-    cmp cx, 0
-    je @@end
-
     jmp @@top
 
 @@end:
@@ -304,3 +299,40 @@ PROC TestKeyboardISR
     call RestoreKeyboardInterrupt
     ret
 ENDP TestKeyboardISR
+
+;///////////////////////////// KEYBOARD SIMPLE ISR
+PROC TestSimpleISR
+
+    lea  dx, [cs:KeyboardISREvents]
+    push dx
+    push cs
+    call InstallKeyboardInterrupt
+
+@@top:
+    call GetKeyboardKey
+    
+    cmp al,0
+    jne @@key
+
+    jmp @@next
+@@key:    
+    cmp al, 30          ; q
+    je @@end
+
+    cmp al, 80h
+    ja @@next    
+    mov dl, al
+    call PrintChar
+    ;call PrintDecimal
+    mov dl,','
+    call PrintChar
+
+@@next:
+    jmp @@top
+
+@@end:
+    mov dl,'q'
+    call PrintChar
+    ;call RestoreKeyboardInterrupt
+    ret
+ENDP TestSimpleISR
