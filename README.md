@@ -533,7 +533,7 @@ a complete implementation but merely an example. For instance, it does not conve
 treat SHIFT, CTRL and ALT combinations.
 2. KeyboardISREvents - a simple implementation that illustrates how to call the default keyboard handler
 
-See [TestKeyboardISR and TestSimpleISR](UtilLib/keys.asm)
+See [TestKeyboardISR and TestSimpleISR](Tests/tests.asm)
 
 # Mouse 
 Most mouse functions are accessible via interrupts and the library focuses on some less trivial parts of handling the mouse.
