@@ -428,3 +428,21 @@ MACRO utm_PrintStrVGA color, strOffset, x, y
     push y
     call PrintStrVGA
 ENDM
+;----------------------------------------------------------------------
+; Prints the LSB BYTE of a WORD in HEX
+;
+; grm_PrintHexByte (word value)
+;----------------------------------------------------------------------
+MACRO utm_PrintHexByte value
+    push value
+    call PrintHexByte
+ENDM
+;----------------------------------------------------------------------
+; Prints a WORD in HEX
+;
+; utm_PrintHexWord (word value)
+;----------------------------------------------------------------------
+MACRO utm_PrintHexWord value
+    push value
+    call PrintHexWord
+ENDM

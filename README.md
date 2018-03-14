@@ -526,6 +526,15 @@ You **must** restore the interrupt at the end of the program by calling
 call RestoreKeyboardInterrupt
 ```
 
+#### Sample Keyboard Interrupts
+The library contains 2 sample implementations of a keyboard ISR. 
+1. KeyboardSampleISR - implements a FIFO buffer and allows retrieving keys using getcISR. Note that this is **not**
+a complete implementation but merely an example. For instance, it does not convert the scancode to ASCII and does not
+treat SHIFT, CTRL and ALT combinations.
+2. KeyboardISREvents - a simple implementation that illustrates how to call the default keyboard handler
+
+See [TestKeyboardISR and TestSimpleISR](UtilLib/keys.asm)
+
 # Mouse 
 Most mouse functions are accessible via interrupts and the library focuses on some less trivial parts of handling the mouse.
 
@@ -825,6 +834,9 @@ PrintStrNewLine     - macro to print a string with a new line
 
 call PrintNewLine   - prints a new line
 call PrintSpace     - prints a space char
+
+call PrintHexByte   - prints the LSB BYTE in HEX
+call PrintHexByte   - prints the WORD in HEX
 ```
 
 ### Printing in VGA
