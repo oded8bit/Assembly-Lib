@@ -16,7 +16,7 @@ MODEL small
 STACK 256
 
 DATASEG
-
+    _isGraphicsProgram     db          FALSE
 
 CODESEG
 
@@ -33,24 +33,34 @@ start:
     mov ax, FALSE
     ut_init_lib ax
 
-    ; -- DOUBLE BUFFERING
-    ; Free redundant memory take by program
-    ; to allow using malloc
-    ; call AllocateDblBuffer
+    ; if (_isGraphicsProgram) {
+    cmp [_isGraphicsProgram], FALSE
+    je notGraphics
 
-    gr_set_video_mode_vga
-    gr_set_color GR_COLOR_GREEN
-  
+        ; -- DOUBLE BUFFERING
+        ; Free redundant memory take by program
+        ; to allow using malloc
+        ; call AllocateDblBuffer
+
+        gr_set_video_mode_vga
+        gr_set_color GR_COLOR_GREEN
+
+    ;} else 
+notGraphics:
     ;------ Tests
     call TestMe
    
 exit:
     call WaitForKeypress 
 
-    ; -- DOUBLE BUFFERING   
-    ; call ReleaseDblBuffer
-
-    gr_set_video_mode_txt
+    ; if (_isGraphicsProgram) {
+    cmp [_isGraphicsProgram], FALSE
+    je go_out
+        ; -- DOUBLE BUFFERING   
+        ; call ReleaseDblBuffer
+        gr_set_video_mode_txt
+    ;} else
+go_out:    
     return 0
 
 END start
