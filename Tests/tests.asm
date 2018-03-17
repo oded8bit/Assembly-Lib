@@ -32,7 +32,9 @@ DATASEG
 
     _string1        db          "This is a test string.",0
     _string2        db          "And this is another string",0
-                    db          50 dup(0)
+                    db          50 dup(1)
+    _stringDollar   db          "123456789",'$'
+    _stringEmpty    db          50 dup(1)
 
     ;_palette        db              400h dup(0)   
 
@@ -343,9 +345,18 @@ PROC TestSimpleISR
 ENDP TestSimpleISR
 ;//////////////////////////// STRINGS
 PROC TestStrings
- 
-    mov si, offset _string1
-    mov di, offset _string2
+    push offset _stringDollar
+    call StrlenDollar
+
+    mov dx, offset _string1 
+    ;call PrintCStr
+    
+    mov si, offset _stringEmpty
+    mov di, offset _string1
+    call Strcpy
+
+    mov dx, offset _stringEmpty 
+    call PrintCStr
 
     push di
     push si

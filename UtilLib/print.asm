@@ -110,7 +110,25 @@ PROC PrintStr
     pop ax
     ret
 ENDP PrintStr
+;----------------------------------------------------------
+; Prints a NULL terminated string to the screen
+; Input: DS:DX pointer to string ending in NULL
+;----------------------------------------------------------
+PROC PrintCStr
+    push si bx ax
+    push dx
+    call Strlen
+    mov bx, ax                  ; store length
+    mov si, dx
+    add si, bx
+    mov [BYTE si], '$'
+    mov ah, 09h
+    int 21h
 
+    mov [BYTE si], Null
+    pop ax bx si
+    ret
+ENDP PrintCStr
 ;----------------------------------------------------------
 ; Prints a string to the screen + New line
 ; Input: DS:DX pointer to string ending in "$"
