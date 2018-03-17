@@ -30,6 +30,10 @@ DATASEG
     _arrCols    equ     3
     _arr2d      dw      _arrCols*_arrRows dup(1)
 
+    _string1        db          "This is a test string.",0
+    _string2        db          "And this is another string",0
+                    db          50 dup(0)
+
     ;_palette        db              400h dup(0)   
 
 CODESEG
@@ -48,7 +52,8 @@ PROC TestMe
     ;call Test2DArray
     ;call TestFile
     ;call TestKeyboardISR
-    call TestSimpleISR
+    ;call TestSimpleISR
+    call TestStrings
     ret
 ENDP TestMe
 
@@ -336,3 +341,18 @@ PROC TestSimpleISR
     ;call RestoreKeyboardInterrupt
     ret
 ENDP TestSimpleISR
+;//////////////////////////// STRINGS
+PROC TestStrings
+ 
+    mov si, offset _string1
+    mov di, offset _string2
+
+    push di
+    push si
+    call Strcpy
+
+    
+
+@@end:
+    ret
+ENDP TestStrings

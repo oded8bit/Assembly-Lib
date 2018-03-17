@@ -17,6 +17,7 @@ NULL        equ     0
 
 ; Includes
 include "UtilLib\util.asm"
+include "UtilLib\string.asm"
 include "UtilLib\math.asm"
 include "UtilLib\file.asm"
 include "UtilLib\print.asm"

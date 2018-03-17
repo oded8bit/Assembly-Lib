@@ -190,43 +190,7 @@ PROC PrintStrVGA
     ret 6
 ENDP PrintStrVGA
 
-;----------------------------------------------------------
-; Calculates length of string ending with NULL
-;
-; push offset
-; call Strlen
-;----------------------------------------------------------
-PROC Strlen
-    store_sp_bp
-    push bx
-    push cx
 
-    ; now the stack is
-	; bp+0 => old base pointer
-	; bp+2 => return address
-	; bp+4 => param2 (offset)
-	; saved registers
-
-  xor cx,cx                        ; Counter
-  mov bx, [WORD PTR bp+04h]        ; String
-  @@StrLengthInnerLoop:            ; Inner loop
-    mov ax,[WORD PTR bx]           ; Read 16 bits from the string
-    test al,al                     ; See if AL is zero
-    je  @@StrLengthEP              ; Jump to the EP if yes
-    inc cx                         ; Increment the count register
-    test ah,ah                     ; See if AH is zero
-    je @@StrLengthEP               ; Jump to the EP if yes
-    add bx,02h                     ; Navigate to the next two bytes of the string
-    inc cx                         ; Increment the count register once again
-    jmp @@StrLengthInnerLoop       ; Repeat
-  @@StrLengthEP:                   
-    mov ax,cx                      ; Move the length of the string to AX
-    
-    pop cx
-    pop bx
-    restore_sp_bp
-    ret 2
-ENDP Strlen
 ;----------------------------------------------------------
 ; Set cursor position
 ;
