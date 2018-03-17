@@ -845,13 +845,6 @@ call PrintCharVGA   - prints a character on VGA display (DL: char, BL: color)
 call PrintStrVGA    - prints a string to the VGA screen    
 ```
 
-### String Length
-You can cound the chars in a string and get the result in AX
-```sh
-push str_offset
-call Strlen
-```
-
 ## Setting cursor position
 ```sh
 push x
@@ -860,11 +853,18 @@ call SetCursorPosition
 ```
 
 
+# String Manipulations
+The library contains several basic string manipulations functions that accept null terminating string
 
-
-
-
-
+```sh
+Strlen       - Calculates length of string ending with NULL
+StrlenDollar - Calculates length of string ending with '$'
+Strcpy       - Copies string s2 into string s1
+Strncpy      - Copies given number of chars from string s2 into string s1.
+Strcat       - concatenate 2 strings
+Strchr       - Searches for the first occurrence of the character in the given string
+Strcmp       - Compares the string pointed to, by str1 to the string pointed to by str2.
+```
 
 # License
 This program is free software; you can redistribute it and/or

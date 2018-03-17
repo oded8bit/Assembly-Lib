@@ -6,7 +6,7 @@
 ; Date: 17-03-2018
 ; File: string.asm
 ;
-; Description: Handles null terminating strings
+; Description: Handles null terminating strings. All strings are BYTE ARRAYS with ASCII chars
 ;===================================================================================================
 LOCALS @@
 
@@ -105,8 +105,8 @@ ENDP StrlenDollar
 ; Strcpy: Copies string s2 into string s1.
 ; 
 ; Input:
-;     push  offset of source string (s2)
 ;     push  offset of target string (s1)
+;     push  offset of source string (s2)
 ;     call strcpy
 ; 
 ; Output: 
@@ -147,7 +147,7 @@ PROC Strcpy
     ; Move byte at address DS:SI to address ES:DI
     rep movsb
 
-    mov [BYTE di+1],NULL
+    mov [BYTE di],NULL
     mov ax, TRUE
 
     jmp @@end
@@ -164,17 +164,80 @@ PROC Strcpy
     ret 4
 ENDP Strcpy
 ;------------------------------------------------------------------------
-; Strcat: 
+; Strncpy: Copies given number of chars from string s2 into string s1.
 ; 
 ; Input:
-;     push  offset of source string 
+;     push  offset of target string (s1)
+;     push  offset of source string (s2)
+;     push  number of chars
+;     call strcpy
+; 
+; Output: 
+;     AX - TRUE on success, FALSE on failure
+; 
+; Limitations: 
+;   1. Assumes string are on DS
+;   2. Assumes NULL terminating strings
+;   3. Assumes S1 is long enough
+;------------------------------------------------------------------------
+PROC Strncpy
+    push bp
+    mov bp,sp
+    push cx si di es
+ 
+    ; now the stack is
+    ; bp+0 => old base pointer
+    ; bp+2 => return address
+    ; bp+4 => number of chars to copy
+    ; bp+6 => offset of source string (s2)
+    ; bp+8 => offset of target string (s1)
+    ; saved registers
+ 
+    ;{
+    parNumChars_    equ        [word bp+4]
+    parSrc_         equ        [word bp+6]
+    parTrg_         equ        [word bp+8]
+    ;}
+ 
+    mov ax, parNumChars_
+    cmp ax, 0
+    je @@emptyString
+    mov cx, ax
+
+    push ds
+    pop es
+    mov di, parTrg_
+    mov si, parSrc_
+    ; Move byte at address DS:SI to address ES:DI
+    rep movsb
+
+    mov [BYTE di],NULL
+    mov ax, TRUE
+
+    jmp @@end
+
+@@emptyString:
+    mov di, parTrg_
+    mov [BYTE di],NULL
+    mov ax, TRUE
+
+@@end:
+    pop es di si cx
+    mov sp,bp
+    pop bp
+    ret 4
+ENDP Strncpy
+;------------------------------------------------------------------------
+; Strcat: concatenate 2 strings
+; 
+; Input:
 ;     push  offset of destination string
+;     push  offset of source string 
 ;     call Strcat
 ; 
 ; Output: 
 ;     AX - length of destination string
 ; 
-; Affected Registers: 
 ; Limitations: 
 ;   1. Assumes string are on DS
 ;   2. Assumes NULL terminating strings
@@ -220,7 +283,7 @@ PROC Strcat
     ; Move byte at address DS:SI to address ES:DI
     rep movsb
 
-    mov [BYTE di+1], NULL
+    mov [BYTE di], NULL
 
     add ax, varSrcLen_  
 
@@ -230,3 +293,133 @@ PROC Strcat
     pop bp
     ret 4
 ENDP Strcat
+;------------------------------------------------------------------------
+; Strchr: Searches for the first occurrence of the character in the 
+; given string
+; 
+; Input:
+;     push  string address
+;     push the char
+;     call Strchr
+; 
+; Output: 
+;     AX - index of char or -1 if not found
+; 
+; Limitations: 
+;   1. Assumes string are on DS
+;   2. Assumes NULL terminating strings
+;------------------------------------------------------------------------
+PROC Strchr
+    push bp
+    mov bp,sp
+    push bx cx dx si
+ 
+    ; now the stack is
+    ; bp+0 => old base pointer
+    ; bp+2 => return address
+    ; bp+4 => char
+    ; bp+6 => string address
+    ; saved registers
+ 
+    ;{
+    parChar_        equ        [word bp+4]
+    parStr_         equ        [word bp+6]
+    ;}
+ 
+    xor cx, cx                  ; counter
+    mov si, parStr_
+    mov bx, parChar_
+@@check:   
+    mov dl,[BYTE si]
+    cmp dl, NULL
+    je @@notfound               ; reached end of string - not found
+
+    cmp dl, bl                  ; if string[counter] == char
+    je @@found
+    inc cx                      ; counter++
+    inc si
+    jmp @@check
+
+@@notfound:
+    mov ax,-1
+    jmp @@end
+@@found:
+    mov ax, cx
+@@end:
+    pop si dx cx bx
+    mov sp,bp
+    pop bp
+    ret 4
+ENDP Strchr
+;------------------------------------------------------------------------
+; Strcmp: Compares the string pointed to, by str1 to the string pointed 
+; to by str2.
+; 
+; Input:
+;     push  str1 offset 
+;     push  str2 offset 
+;     call Strcmp
+; 
+; Output: 
+;     AX - 0 if the same, -1 if different
+; 
+; Limitations: 
+;   1. Assumes string are on DS
+;   2. Assumes NULL terminating strings
+;------------------------------------------------------------------------
+PROC Strcmp
+    push bp
+    mov bp,sp
+    push cx
+ 
+    ; now the stack is
+    ; bp+0 => old base pointer
+    ; bp+2 => return address
+    ; bp+4 => str2 offset
+    ; bp+6 => str1 offset
+    ; saved registers
+ 
+    ;{
+    parstr2_        equ        [word bp+4]
+    parStr1_        equ        [word bp+6]
+    ;}
+ 
+    mov si, parStr1_
+    mov di, parStr2_
+@@check:
+    cmp [BYTE si], NULL
+    je @@endof1
+
+    ; if we got to the end of S2 but not of S1 then
+    ; there is a miss match
+    cmp [BYTE di], NULL
+    je @@notmatch
+
+    ; if (s1[index] == s2[index])
+    mov cl, [BYTE si]
+    cmp cl, [BYTE di]
+    jne @@notmatch
+
+    ; mov to next char
+    inc si
+    inc di
+
+    jmp @@check
+
+@@endof1:
+    ; check if this is the end of s2 as well
+    cmp [BYTE di],NULL
+    jne @@notmatch
+
+    ; match
+    mov ax, 0
+
+    jmp @@end
+@@notmatch:
+    mov ax, -1    
+@@end:
+    pop cx
+    mov sp,bp
+    pop bp
+    ret 4
+ENDP Strcmp

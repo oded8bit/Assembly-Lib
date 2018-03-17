@@ -31,7 +31,7 @@ DATASEG
     _arr2d      dw      _arrCols*_arrRows dup(1)
 
     _string1        db          "This is a test string.",0
-    _string2        db          "And this is another string",0
+    _string2        db          "And this is another string - ",0
                     db          50 dup(1)
     _stringDollar   db          "123456789",'$'
     _stringEmpty    db          50 dup(1)
@@ -350,18 +350,34 @@ PROC TestStrings
 
     mov dx, offset _string1 
     ;call PrintCStr
-    
-    mov si, offset _stringEmpty
-    mov di, offset _string1
+    ;call PrintNewLine
+
+    push offset _stringEmpty
+    push offset _string1
     call Strcpy
 
     mov dx, offset _stringEmpty 
     call PrintCStr
+    call PrintNewLine
 
-    push di
-    push si
-    call Strcpy
+    push offset _string2
+    push offset _string1
+    call Strcat
 
+    mov dx, offset _string2
+    call PrintCStr
+    call PrintNewLine
+
+    push offset _string2
+    push 'd'
+    call Strchr
+
+    push offset _string2
+    push offset _string2
+    call Strcmp
+
+    mov dl, al
+    call PrintByte
     
 
 @@end:
