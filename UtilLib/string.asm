@@ -423,3 +423,99 @@ PROC Strcmp
     pop bp
     ret 4
 ENDP Strcmp
+;------------------------------------------------------------------------
+; Strstr: finds the first occurrence of the substring needle in the string 
+; haystack
+; 
+; Input:
+;     push  offset of haystack string
+;     push  offset of needle string (what we are looking for)
+;     call Strstr
+; 
+; Output: 
+;     AX - index of subsctring or -1 if not found
+; 
+; Limitations: 
+;   1. Assumes string are on DS
+;   2. Assumes NULL terminating strings
+;------------------------------------------------------------------------
+PROC Strstr
+    push bp
+    mov bp,sp
+    push bx cx dx si di
+ 
+    ; now the stack is
+    ; bp-2 => 
+    ; bp+0 => old base pointer
+    ; bp+2 => return address
+    ; bp+4 => needle
+    ; bp+6 => haystack
+    ; saved registers
+ 
+    ;{
+    parHaystack_    equ        [word bp+6]
+    parNeedle_      equ        [word bp+4]
+    ;}
+
+    xor cx, cx                  ; counter
+    mov si, parHaystack_
+    mov bx, parNeedle_
+@@check:   
+    mov dl,[BYTE si]
+    cmp dl, NULL
+    je @@notfound               ; reached end of string - not found
+
+    cmp dl,[BYTE bx]            ; if haystack[counter] == needle[0]
+    je @@foundFirst
+@@next:
+    inc cx                      ; counter++
+    inc si
+    jmp @@check
+
+@@foundFirst:
+    push cx si bx di dx
+
+@@checknext:
+    ; we already know the first char matches
+    inc si                      ; index to haystack string. h++
+    inc bx                      ; index to needle string n = 1
+
+    mov dl,[BYTE si]            ; haystack[h]
+    mov dh,[BYTE bx]            ; needle[n]
+
+    ; if (haystack[h] == NULL && needle[n] == NULL) then this is a match else break
+    cmp dl, NULL
+    jne @@cont
+
+    cmp dh, NULL
+    je @@found
+
+    ; hay is null but not neddle
+    pop dx di bx si cx
+    jmp @@next
+@@cont:
+    ; if (needle[n] == NULL) then we found a match
+    cmp dh, NULL
+    je @@found
+
+    ; if (haystack[h] == needle[n])
+    cmp dl,dh
+    je @@checknext            ; the same, check next char
+
+    ; else (no match) break
+    pop dx di bx si cx
+    jmp @@next
+    
+
+@@notfound:
+    mov ax,-1
+    jmp @@end
+@@found:
+    pop dx di bx si cx
+    mov ax, cx
+@@end:
+    pop di si dx cx bx
+    mov sp,bp
+    pop bp
+    ret 4
+ENDP Strstr

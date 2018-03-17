@@ -33,6 +33,8 @@ DATASEG
     _string1        db          "This is a test string.",0
     _string2        db          "And this is another string - ",0
                     db          50 dup(1)
+    _stringNeedle   db          "1234567",0
+    _stringHay      db          "123456",0
     _stringDollar   db          "123456789",'$'
     _stringEmpty    db          50 dup(1)
 
@@ -345,6 +347,7 @@ PROC TestSimpleISR
 ENDP TestSimpleISR
 ;//////////////////////////// STRINGS
 PROC TestStrings
+    jmp @@indexof
     push offset _stringDollar
     call StrlenDollar
 
@@ -379,6 +382,13 @@ PROC TestStrings
     mov dl, al
     call PrintByte
     
+@@indexof:    
+    push offset _stringHay
+    push offset _stringNeedle
+    call Strstr
+
+    mov dl, al
+    call PrintByte
 
 @@end:
     ret
