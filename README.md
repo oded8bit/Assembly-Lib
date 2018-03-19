@@ -25,9 +25,10 @@ The library contains an utility package with many useful macros and procedures s
 3. [Mouse](UtilLib/mouse.asm) input
 4. Several [Math](UtilLib/math.asm) and randomizer functions
 5. Memory [management](UtilLib/mem.asm) (allocation and deallocation on the heap)
-6. Printing to the [screen](UtilLib/print.asm)
-7. Support for playing [sound](UtilLib/sound.asm)
-8. [Time](UtilLib/time.asm) functions for delays
+6. [String](UtilLib/string.asm) operations
+7. Printing to the [screen](UtilLib/print.asm)
+8. Support for playing [sound](UtilLib/sound.asm)
+9. [Time](UtilLib/time.asm) functions for delays
 
 
 # Using the library
